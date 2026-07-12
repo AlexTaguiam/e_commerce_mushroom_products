@@ -1,0 +1,90 @@
+# ==============================================================================
+# Dependencies & Package Managers
+# ==============================================================================
+node_modules/
+/server/node_modules/
+/client/node_modules/
+.pnpm-store/
+jspm_packages/
+web_modules/
+
+# ==============================================================================
+# Environment Variables & Secrets (CRITICAL)
+# ==============================================================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+/server/.env
+/client/.env
+
+# Firebase private keys and configurations
+**/*.json
+!firebase.json
+!package.json
+!tsconfig.json
+
+# ==============================================================================
+# Production / Build Output
+# ==============================================================================
+dist/
+/client/dist/
+build/
+.next/
+out/
+.nuxt/
+
+# ==============================================================================
+# Logs and Diagnostics
+# ==============================================================================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ==============================================================================
+# Operating System & IDE Artifacts
+# ==============================================================================
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# IDEs / Editors
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ==============================================================================
+# Testing & Coverage
+# ==============================================================================
+coverage/
+*.lcov
+.nyc_output
+
+# ==============================================================================
+# Local DB & Temp Files
+# ==============================================================================
+.sqlite
+*.db
+.cache/
+.parcel-cache/
+.eslintcache
