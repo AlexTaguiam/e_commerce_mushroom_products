@@ -38,7 +38,7 @@ export async function createProduct(req: Request, res: Response) {
   if (req.file) {
     const uploadResult = await new Promise<any>((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
-        { folder: "alhona-products" },
+        { folder: "mushroom_products" },
         (error, result) => (error ? reject(error) : resolve(result)),
       );
       stream.end(req.file!.buffer);

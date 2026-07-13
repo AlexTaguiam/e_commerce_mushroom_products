@@ -7,7 +7,7 @@ import {
 } from "../controllers/productController";
 import { verifyFirebaseToken } from "../middleware/verifyFirebaseToken";
 import { requireAdmin } from "../middleware/requireAdmin";
-import upload from "../middleware/upload";
+import { upload } from "../middleware/upload";
 
 const router = Router();
 
