@@ -1,36 +1,14 @@
 {
   "compilerOptions": {
-    // File Layout
-    "rootDir": "./src",
+    "target": "ES2020",
+    "module": "commonjs",
     "outDir": "./dist",
-
-    // Environment Settings - Changed to NodeNext for modern ESM support
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "target": "es2022",
-
-    // Ensure Node types are loaded
-    "types": ["node"],
-
-    // Other Outputs
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
-
-    // Stricter Typechecking Options
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+    "rootDir": "./src",
     "strict": true,
-
-    // Recommended Options
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-    "skipLibCheck": true,
-
-    // Interop & Compliance
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*"]
+  "include": ["src"]
 }

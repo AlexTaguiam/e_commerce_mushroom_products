@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  firebaseUid String   @id @map("firebase_uid")
+  name        String
+  email       String   @unique
+  phone       String?
+  address     String?
+  role        String   @default("customer")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  orders        Order[]
+  inventoryLogs InventoryLog[] @relation("AdminLogs")
+
+  @@map("users")
+}
+
+model Product {
+  productId     Int      @id @default(autoincrement()) @map("product_id")
+  name          String
+  description   String?
+  category      String?
+  price         Decimal  @db.Decimal(10, 2)
+  unit          String
+  stockQuantity Int      @default(0) @map("stock_quantity")
+  imageUrl      String?  @map("image_url")
+  status        String   @default("active")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  orderItems    OrderItem[]
+  inventoryLogs InventoryLog[]
+
+  @@map("products")
+}
+
+model Order {
+  orderId         Int      @id @default(autoincrement()) @map("order_id")
+  userId          String   @map("user_id")
+  orderDate       DateTime @default(now()) @map("order_date")
+  fulfillmentType String   @map("fulfillment_type")
+  deliveryAddress String?  @map("delivery_address")
+  status          String   @default("pending")
+  paymentMethod   String   @map("payment_method")
+  paymentStatus   String   @default("unpaid") @map("payment_status")
+  totalAmount     Decimal  @db.Decimal(10, 2) @map("total_amount")
+
+  user       User        @relation(fields: [userId], references: [firebaseUid])
+  orderItems OrderItem[]
+  payment    Payment?
+
+  @@map("orders")
+}
+
+model OrderItem {
+  orderItemId  Int     @id @default(autoincrement()) @map("order_item_id")
+  orderId      Int     @map("order_id")
+  productId    Int     @map("product_id")
+  quantity     Int
+  priceAtOrder Decimal @db.Decimal(10, 2) @map("price_at_order")
+
+  order   Order   @relation(fields: [orderId], references: [orderId], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [productId])
+
+  @@map("order_items")
+}
+
+model Payment {
+  paymentId      Int       @id @default(autoincrement()) @map("payment_id")
+  orderId        Int       @unique @map("order_id")
+  method         String
+  amount         Decimal   @db.Decimal(10, 2)
+  status         String    @default("pending")
+  transactionRef String?   @map("transaction_ref")
+  paidAt         DateTime? @map("paid_at")
+
+  order Order @relation(fields: [orderId], references: [orderId], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model InventoryLog {
+  logId          Int      @id @default(autoincrement()) @map("log_id")
+  productId      Int      @map("product_id")
+  changeType     String   @map("change_type")
+  quantityChange Int      @map("quantity_change")
+  reason         String?
+  loggedAt       DateTime @default(now()) @map("logged_at")
+  adminId        String?  @map("admin_id")
+
+  product Product @relation(fields: [productId], references: [productId], onDelete: Cascade)
+  admin   User?   @relation("AdminLogs", fields: [adminId], references: [firebaseUid])
+
+  @@map("inventory_logs")
+}
