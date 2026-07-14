@@ -4,6 +4,7 @@ import {
   getProductById,
   createProduct,
   updateProductStatus,
+  updateProduct,
 } from "../controllers/productController";
 import { verifyFirebaseToken } from "../middleware/verifyFirebaseToken";
 import { requireAdmin } from "../middleware/requireAdmin";
@@ -12,7 +13,9 @@ import { upload } from "../middleware/upload";
 const router = Router();
 
 router.get("/", getProducts);
+
 router.get("/:id", getProductById);
+
 router.post(
   "/",
   verifyFirebaseToken,
@@ -20,6 +23,15 @@ router.post(
   upload.single("image"),
   createProduct,
 );
+
+router.patch(
+  "/:id",
+  verifyFirebaseToken,
+  requireAdmin,
+  upload.single("image"),
+  updateProduct,
+);
+
 router.patch(
   "/:id/status",
   verifyFirebaseToken,

@@ -77,6 +77,40 @@ export async function createProduct(req: Request, res: Response) {
   res.status(201).json(product);
 }
 
+export async function updateProduct(req: Request, res: Response) {
+  const { name, description, category, price, unit, stockQuantity } = req.body;
+
+  console.log("name: ", name);
+
+  let imageUrl: string | undefined;
+
+  if (req.file) {
+    const uploadResult = await new Promise<any>((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: "mushroom_products" },
+        (error, result) => (error ? reject(error) : resolve(result)),
+      );
+      stream.end(req.file!.buffer);
+    });
+    imageUrl = uploadResult.secure_url;
+  }
+
+  const product = await prisma.product.update({
+    where: { productId: Number(req.params.id) },
+    data: {
+      name,
+      description,
+      category,
+      price,
+      unit,
+      stockQuantity: Number(stockQuantity) || 0,
+      ...(imageUrl && { imageUrl }),
+    },
+  });
+
+  res.json(product);
+}
+
 export async function updateProductStatus(req: Request, res: Response) {
   const { status } = req.body;
 
