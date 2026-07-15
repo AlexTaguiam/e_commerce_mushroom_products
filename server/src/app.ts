@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import productRoutes from "./routes/productRoutes";
 import authRoutes from "./routes/authRoutes";
+import orderRoutes from "./routes/orderRoutes";
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/orders");
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 

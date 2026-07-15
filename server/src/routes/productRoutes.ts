@@ -12,10 +12,11 @@ import { upload } from "../middleware/upload";
 
 const router = Router();
 
+// customer endpoints
 router.get("/", getProducts);
-
 router.get("/:id", getProductById);
 
+// admin endpoints
 router.post(
   "/",
   verifyFirebaseToken,
