@@ -231,7 +231,83 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
 export const getOrderById = async (
   req: Request,
   res: Response,
-): Promise<void> => {};
+): Promise<void> => {
+  try {
+    if (!req.user || !req.user.uid) {
+      res.status(401).json({
+        error: "Unauthorized: Missing authentication token.",
+      });
+      return;
+    }
+
+    const { uid, role } = req.user;
+    const { id } = req.params;
+    const orderId = Number(id);
+
+    console.log("Order ID:", orderId);
+
+    if (isNaN(orderId)) {
+      res.status(400).json({
+        error: "Bad Request: Invalid format for target order ID identifier.",
+      });
+      return;
+    }
+
+    const whereClause: any = { orderId };
+
+    if (role !== "admin") {
+      whereClause.userId = uid;
+    }
+
+    const order = await prisma.order.findFirst({
+      where: whereClause,
+      include: {
+        orderItems: {
+          select: {
+            quantity: true,
+            priceAtOrder: true,
+            product: {
+              select: {
+                name: true,
+                imageUrl: true,
+              },
+            },
+          },
+        },
+        payment: {
+          select: {
+            method: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      res.status(404).json({
+        error:
+          "Not Found: The requested order record could not be resolved or access is restricted.",
+      });
+      return; // 👈 FIXED: Safely exits execution context
+    }
+
+    res.status(200).json({
+      success: true,
+      order,
+    });
+  } catch (error: any) {
+    console.error(
+      "Unable to capture order profile logs:",
+      error.message || error,
+    );
+    res.status(400).json({
+      error: "Getting Order details Interrupted",
+      details:
+        error.message ||
+        "An unhandled engine exception occurred while handling retrieval commands.",
+    });
+  }
+};
 
 export const confirmOrder = async (
   req: Request,
