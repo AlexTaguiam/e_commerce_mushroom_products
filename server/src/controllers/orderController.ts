@@ -156,8 +156,76 @@ export const createOrder = async (
   }
 };
 
+// const databaseUser = await prisma.user.findUnique({
+//   where: { firebaseUid: req.user.uid },
+// });
+
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
-  //   const { uid } = req.user?.uid;
+  try {
+    if (!req.user || !req.user.uid) {
+      res.status(401).json({
+        error: "Unauthorized: Missing authentication token.",
+      });
+      return;
+    }
+
+    const { uid, role } = req.user;
+    const { status } = req.query;
+
+    const whereClause: any = {};
+
+    if (role === "admin") {
+      if (status) {
+        whereClause.status = status;
+      }
+    } else {
+      whereClause.userId = uid;
+
+      if (status) {
+        whereClause.status = status;
+      }
+    }
+
+    const orders = await prisma.order.findMany({
+      where: whereClause,
+      include: {
+        orderItems: {
+          select: {
+            quantity: true,
+            priceAtOrder: true,
+            product: {
+              select: {
+                name: true,
+                imageUrl: true,
+              },
+            },
+          },
+        },
+        payment: {
+          select: {
+            method: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: {
+        orderDate: "desc",
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders,
+    });
+  } catch (error: any) {
+    console.error("Unable to get orders ", error.message || error);
+    res.status(400).json({
+      error: "Getting Orders Interrupted",
+      details:
+        error.message || "An unhandled exception occurred in getting orders.",
+    });
+  }
 };
 
 export const getOrderById = async (
