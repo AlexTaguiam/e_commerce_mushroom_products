@@ -7,6 +7,8 @@ export async function requireAdmin(
   next: NextFunction,
 ) {
   console.log("Role: ", req.user?.role);
+  console.log("Uid: ", req.user?.uid);
+  console.log("User: ", req.user);
   try {
     if (!req.user || !req.user.uid) {
       res

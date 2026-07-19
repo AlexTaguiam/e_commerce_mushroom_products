@@ -14,8 +14,11 @@ export async function verifyFirebaseToken(
   }
 
   try {
-    const decoded = await auth.verifyIdToken(token);
-    req.user = decoded;
+    const decodedToken = await auth.verifyIdToken(token);
+    req.user = {
+      ...decodedToken,
+      role: (decodedToken.role as string) || "customer",
+    };
     next();
   } catch (err) {
     return res.status(401).json({ error: "Invalid or expired token" });
