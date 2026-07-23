@@ -8,7 +8,7 @@ import {
   createOrder,
   getOrderById,
   getOrders,
-  updateOrder,
+  updateOrderStatus,
 } from "../controllers/orderController";
 
 const router = Router();
@@ -20,7 +20,12 @@ router.get("/:id", verifyFirebaseToken, getOrderById);
 
 // admin endpoints
 router.patch("/:id/confirm", verifyFirebaseToken, requireAdmin, confirmOrder);
-router.patch("/:id/status", verifyFirebaseToken, requireAdmin, updateOrder);
+router.patch(
+  "/:id/status",
+  verifyFirebaseToken,
+  requireAdmin,
+  updateOrderStatus,
+);
 router.patch("/:id/cancel", verifyFirebaseToken, requireAdmin, cancelOrder);
 
 export default router;

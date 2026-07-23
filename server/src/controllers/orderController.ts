@@ -433,10 +433,128 @@ export const confirmOrder = async (
   }
 };
 
-export const updateOrder = async (
+export const updateOrderStatus = async (
   req: Request,
   res: Response,
-): Promise<void> => {};
+): Promise<void> => {
+  try {
+    // 1. Guard Clause: Authenticate Session Context
+    if (!req.user || !req.user.uid) {
+      res
+        .status(401)
+        .json({ error: "Unauthorized: Missing authentication token." });
+      return;
+    }
+
+    const { role } = req.user;
+    const { id } = req.params;
+    const { status: targetStatus } = req.body; // The status the admin wants to change to
+
+    // 2. Enforce role-based access control
+    if (role !== "admin") {
+      res.status(403).json({
+        error: "Unauthorized: Only administrators can update order status.",
+      });
+      return;
+    }
+
+    // 3. Fetch the target order
+    const order = await prisma.order.findUnique({
+      where: { orderId: Number(id) },
+    });
+
+    if (!order) {
+      res.status(404).json({ error: "Order not found." });
+      return;
+    }
+
+    const currentStatus = order.status;
+    const { fulfillmentType, paymentMethod } = order;
+
+    // 4. Quick check: Is it already in the target status?
+    if (currentStatus === targetStatus) {
+      res
+        .status(400)
+        .json({ error: `Order is already in '${targetStatus}' status.` });
+      return;
+    }
+
+    // 5. The State Machine Guard Rail
+    let isValidTransition = false;
+
+    switch (currentStatus) {
+      case "confirmed":
+        if (targetStatus === "ready") isValidTransition = true;
+        break;
+
+      case "ready":
+        if (
+          fulfillmentType === "delivery" &&
+          targetStatus === "out_for_delivery"
+        ) {
+          isValidTransition = true;
+        } else if (
+          fulfillmentType === "pickup" &&
+          targetStatus === "completed"
+        ) {
+          isValidTransition = true;
+        }
+        break;
+
+      case "out_for_delivery":
+        if (targetStatus === "completed") isValidTransition = true;
+        break;
+
+      case "completed":
+        // Once completed, it's locked down forever
+        res
+          .status(400)
+          .json({ error: "Cannot modify an order that is already completed." });
+        return;
+
+      default:
+        res
+          .status(400)
+          .json({ error: `Unhandled current status: ${currentStatus}` });
+        return;
+    }
+
+    // If the requested status skipped a track step, reject it
+    if (!isValidTransition) {
+      res.status(400).json({
+        error: `Invalid status track. Cannot move a ${fulfillmentType} order from '${currentStatus}' straight to '${targetStatus}'.`,
+      });
+      return;
+    }
+
+    // 6. Build dynamic data payload for the single update
+    const updateData: any = { status: targetStatus };
+
+    // Financial Log Sync: Auto-pay on package completion for Cash on Delivery
+    if (targetStatus === "completed" && paymentMethod === "cod") {
+      updateData.paymentStatus = "paid";
+    }
+
+    // 7. Execute the Single Database Mutation
+    const updatedOrder = await prisma.order.update({
+      where: { orderId: Number(id) },
+      data: updateData,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Order status successfully updated to ${targetStatus}.`,
+      order: updatedOrder,
+    });
+  } catch (error: any) {
+    console.error("Unable to update order status:", error.message || error);
+    res.status(500).json({
+      error: "Updating Order Interrupted",
+      details:
+        error.message || "An error occurred on the database engine level.",
+    });
+  }
+};
 
 export const cancelOrder = async (
   req: Request,
