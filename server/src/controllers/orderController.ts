@@ -559,4 +559,84 @@ export const updateOrderStatus = async (
 export const cancelOrder = async (
   req: Request,
   res: Response,
-): Promise<void> => {};
+): Promise<void> => {
+  try {
+    if (!req.user || !req.user.uid) {
+      res
+        .status(401)
+        .json({ error: "Unauthorized: Missing authentication token." });
+      return;
+    }
+
+    const { role, uid } = req.user;
+    const { id } = req.params;
+
+    const whereClause: any = { orderId: Number(id) };
+
+    const order = await prisma.order.findUnique({
+      where: { orderId: Number(id) },
+    });
+
+    if (!order) {
+      res.status(404).json({ error: "Order not found." });
+      return;
+    }
+
+    if (role !== "admin") {
+      if (uid !== order?.userId) {
+        res.status(403).json({
+          error: "Unauthorized: You do not own this order.",
+        });
+        return;
+      }
+      whereClause.userId = uid;
+    }
+
+    const nonCancellableStatuses = new Set([
+      "confirmed",
+      "ready",
+      "out_for_delivery",
+      "completed",
+    ]);
+
+    if (nonCancellableStatuses.has(order.status)) {
+      res.status(400).json({
+        error: "Order already confirmed and cannot be cancelled",
+      });
+      return;
+    }
+
+    if (order.status === "cancelled") {
+      res.status(400).json({
+        error: "order is already cancelled",
+      });
+      return;
+    }
+
+    const completedCancellation = await prisma.order.update({
+      where: whereClause,
+      data: {
+        status: "cancelled",
+        payment: {
+          // Changed back to 'update' because Prisma enforces a strict 1:1 relationship here
+          update: {
+            status: "cancelled",
+          },
+        },
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Order Successfully cancelled.`,
+      order: completedCancellation,
+    });
+  } catch (error: any) {
+    console.error("Unable to cancel order:", error.message || error);
+    res.status(500).json({
+      error: "Cancelling Order Interrupted",
+      details:
+        error.message || "An error occurred on the database engine level.",
+    });
+  }
+};
