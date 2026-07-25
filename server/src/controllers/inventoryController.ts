@@ -10,8 +10,6 @@ export const getInventoryLogs = async (
   res: Response,
 ): Promise<void> => {
   try {
-    // TODO: Implement query filters and log retrieval logic
-
     if (!req.user || !req.user.uid) {
       res
         .status(401)
@@ -151,11 +149,85 @@ export const adjustInventory = async (
   res: Response,
 ): Promise<void> => {
   try {
-    // TODO: Implement manual adjustment and inventory log insertion logic
+    console.log("This is from adjust");
+
+    // 1. Guard Clause: Authentication Check
+    if (!req.user || !req.user.uid) {
+      res
+        .status(401)
+        .json({ error: "Unauthorized: Missing authentication token." });
+      return;
+    }
+
+    const { role, uid } = req.user;
+
+    // 2. Guard Clause: Authorization Check (403 Forbidden is ideal here)
+    if (role !== "admin") {
+      res
+        .status(403)
+        .json({ error: "Forbidden: Administrative access required." });
+      return;
+    }
+
+    const { productId, adjustment, reason } = req.body;
+
+    if (
+      !productId ||
+      adjustment === undefined ||
+      isNaN(Number(adjustment)) ||
+      Number(adjustment) === 0
+    ) {
+      res.status(404).json({
+        error:
+          "A valid productId and a non-zero adjustment value are required.",
+      });
+      return;
+    }
+
+    const currentProduct = await prisma.product.findUnique({
+      where: { productId: Number(productId) },
+      select: { stockQuantity: true },
+    });
+
+    if (!currentProduct) {
+      res.status(404).json({
+        error: "Product not found",
+      });
+      return;
+    }
+
+    const currentStock = currentProduct.stockQuantity;
+    const changeValue = Number(adjustment);
+
+    if (currentStock + changeValue < 0) {
+      res.status(400).json({
+        error: "Bad Request",
+        message: `Invalid adjustment. Current stock is ${currentStock}, cannot reduce by ${Math.abs(changeValue)}.`,
+      });
+      return;
+    }
+
+    const updatedProduct = await prisma.product.update({
+      where: { productId: Number(productId) },
+      data: {
+        stockQuantity: {
+          increment: changeValue,
+        },
+        inventoryLogs: {
+          create: {
+            changeType: "ADJUSTMENT",
+            quantityChange: changeValue,
+            reason: reason || "Administrative stock reconciliation",
+            adminId: uid,
+          },
+        },
+      },
+    });
 
     res.status(200).json({
       success: true,
       message: "Inventory adjusted successfully.",
+      data: updatedProduct,
     });
   } catch (error: any) {
     console.error("Error in adjustInventory:", error.message || error);
