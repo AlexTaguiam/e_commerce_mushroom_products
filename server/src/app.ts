@@ -5,14 +5,14 @@ import productRoutes from "./routes/productRoutes";
 import authRoutes from "./routes/authRoutes";
 import orderRoutes from "./routes/orderRoutes";
 import inventoryRoutes from "./routes/inventoryRoutes";
-// import paymongoWebhookRouter from ""
+import paymongoWebhookRouter from "./webhooks/paymongoWebhook";
 
 dotenv.config();
 
 const app = express();
 
 app.use(cors());
-// app.use("/webhooks", paymongoWebhookRouter);
+app.use("/webhooks", paymongoWebhookRouter);
 app.use(express.json());
 
 app.use("/api/products", productRoutes);

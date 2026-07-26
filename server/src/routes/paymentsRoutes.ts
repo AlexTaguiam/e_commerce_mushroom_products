@@ -8,6 +8,6 @@ const router = Router();
 
 // POST /api/payments/create-intent
 // Access: Owner — token required, ownership checked inside the controller
-router.post("/create-intent", verifyFirebaseToken);
+router.post("/create-intent", verifyFirebaseToken, createPaymentIntent);
 
 export default router;
