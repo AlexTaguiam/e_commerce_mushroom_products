@@ -6,6 +6,7 @@ import authRoutes from "./routes/authRoutes";
 import orderRoutes from "./routes/orderRoutes";
 import inventoryRoutes from "./routes/inventoryRoutes";
 import paymongoWebhookRouter from "./webhooks/paymongoWebhook";
+import { globalLimiter } from "./middleware/rateLimiter";
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ const app = express();
 app.use(cors());
 app.use("/webhooks", paymongoWebhookRouter);
 app.use(express.json());
+app.use(globalLimiter); // Apply global rate limiter to all routes
 
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
