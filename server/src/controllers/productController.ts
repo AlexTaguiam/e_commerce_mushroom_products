@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import prisma from "../config/db";
 import cloudinary from "../config/cloudinary";
 import { PRODUCT_CATEGORY, PRODUCT_STATUS } from "../constants/enums";
+import { sendResponse } from "../utils/reponseHandler";
 
 // --- GET ALL PRODUCTS ---
 export async function getProducts(req: Request, res: Response): Promise<void> {
@@ -16,10 +17,10 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
       orderBy: { createdAt: "desc" },
     });
 
-    res.status(200).json(products);
+    sendResponse(res, 200, "Products retrieved successfully", products);
   } catch (error) {
     console.error("Error in getProducts:", error);
-    res.status(500).json({ error: "Failed to fetch products" });
+    sendResponse(res, 500, "Failed to fetch products");
   }
 }
 
@@ -32,7 +33,7 @@ export async function getProductById(
     const productId = Number(req.params.id);
 
     if (isNaN(productId)) {
-      return res.status(400).json({ error: "Invalid product ID format" });
+      return sendResponse(res, 400, "Invalid product ID format");
     }
 
     const product = await prisma.product.findUnique({
@@ -40,13 +41,13 @@ export async function getProductById(
     });
 
     if (!product) {
-      return res.status(404).json({ error: "Product not found" });
+      return sendResponse(res, 404, "Product not found");
     }
 
-    res.status(200).json(product);
+    sendResponse(res, 200, "Product retrieved successfully", product);
   } catch (error) {
     console.error(`Error in getProductById for ID ${req.params.id}:`, error);
-    res.status(500).json({ error: "Failed to retrieve the product" });
+    sendResponse(res, 500, "Failed to retrieve the product");
   }
 }
 
@@ -61,7 +62,7 @@ export async function createProduct(
 
     // Validate category
     if (category && !PRODUCT_CATEGORY.includes(category)) {
-      return res.status(400).json({ error: "Invalid category" });
+      return sendResponse(res, 400, "Invalid category");
     }
 
     let imageUrl: string | undefined;
@@ -94,9 +95,7 @@ export async function createProduct(
         imageUrl = uploadResult.secure_url;
       } catch (uploadError) {
         console.error("Cloudinary upload failed:", uploadError);
-        return res
-          .status(500)
-          .json({ error: "Image upload failed. Product creation aborted." });
+        return sendResponse(res, 500, "Image upload failed. Product creation aborted.");
       }
     }
 
@@ -129,10 +128,10 @@ export async function createProduct(
       return created;
     });
 
-    res.status(201).json(product);
+    sendResponse(res, 201, "Product created successfully", product);
   } catch (error) {
     console.error("Error in createProduct:", error);
-    res.status(500).json({ error: "Failed to create product" });
+    sendResponse(res, 500, "Failed to create product");
   }
 }
 
@@ -144,7 +143,7 @@ export async function updateProduct(
   try {
     const productId = Number(req.params.id);
     if (isNaN(productId)) {
-      return res.status(400).json({ error: "Invalid product ID format" });
+      return sendResponse(res, 400, "Invalid product ID format");
     }
 
     const { name, description, category, price, unit, stockQuantity } =
@@ -152,7 +151,7 @@ export async function updateProduct(
 
     // Validate category if updating it
     if (category && !PRODUCT_CATEGORY.includes(category)) {
-      return res.status(400).json({ error: "Invalid category" });
+      return sendResponse(res, 400, "Invalid category");
     }
 
     let imageUrl: string | undefined;
@@ -185,9 +184,7 @@ export async function updateProduct(
         imageUrl = uploadResult.secure_url;
       } catch (uploadError) {
         console.error("Cloudinary upload failed during update:", uploadError);
-        return res
-          .status(500)
-          .json({ error: "Image upload failed. Update aborted." });
+        return sendResponse(res, 500, "Image upload failed. Update aborted.");
       }
     }
 
@@ -205,16 +202,16 @@ export async function updateProduct(
       },
     });
 
-    res.status(200).json(updatedProduct);
+    sendResponse(res, 200, "Product updated successfully", updatedProduct);
   } catch (error: any) {
     console.error(`Error in updateProduct for ID ${req.params.id}:`, error);
 
     // Check if error is due to product not existing in database (Prisma Code: P2025)
     if (error.code === "P2025") {
-      return res.status(404).json({ error: "Product not found to update" });
+      return sendResponse(res, 404, "Product not found to update");
     }
 
-    res.status(500).json({ error: "Failed to update product" });
+    sendResponse(res, 500, "Failed to update product");
   }
 }
 
@@ -226,13 +223,13 @@ export async function updateProductStatus(
   try {
     const productId = Number(req.params.id);
     if (isNaN(productId)) {
-      return res.status(400).json({ error: "Invalid product ID format" });
+      return sendResponse(res, 400, "Invalid product ID format");
     }
 
     const { status } = req.body;
 
     if (!PRODUCT_STATUS.includes(status)) {
-      return res.status(400).json({ error: "Invalid status" });
+      return sendResponse(res, 400, "Invalid status");
     }
 
     const product = await prisma.product.update({
@@ -240,7 +237,7 @@ export async function updateProductStatus(
       data: { status },
     });
 
-    res.status(200).json(product);
+    sendResponse(res, 200, "Product status updated successfully", product);
   } catch (error: any) {
     console.error(
       `Error in updateProductStatus for ID ${req.params.id}:`,
@@ -248,11 +245,9 @@ export async function updateProductStatus(
     );
 
     if (error.code === "P2025") {
-      return res
-        .status(404)
-        .json({ error: "Product not found to update status" });
+      return sendResponse(res, 404, "Product not found to update status");
     }
 
-    res.status(500).json({ error: "Failed to update product status" });
+    sendResponse(res, 500, "Failed to update product status");
   }
 }

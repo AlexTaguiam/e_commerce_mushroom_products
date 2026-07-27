@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../config/db";
 import { from } from "node:stream/iter";
+import { sendResponse } from "../utils/reponseHandler";
 
 /**
  * @route   GET /api/inventory/logs
@@ -11,9 +12,7 @@ export const getInventoryLogs = async (
 ): Promise<void> => {
   try {
     if (!req.user || !req.user.uid) {
-      res
-        .status(401)
-        .json({ error: "Unauthorized: Missing authentication token." });
+      sendResponse(res, 401, "Unauthorized: Missing authentication token.");
       return;
     }
 
@@ -21,9 +20,7 @@ export const getInventoryLogs = async (
     const { product_id: productId } = req.query;
 
     if (role !== "admin") {
-      res
-        .status(403)
-        .json({ error: "Forbidden: Only administrators can view logs." });
+      sendResponse(res, 403, "Forbidden: Only administrators can view logs.");
       return;
     }
 
@@ -36,17 +33,10 @@ export const getInventoryLogs = async (
       where: whereClause,
     });
 
-    res.status(200).json({
-      success: true,
-      message: "Logs retrieved successfully.",
-      data: logHistory,
-    });
+    sendResponse(res, 200, "Logs retrieved successfully.", logHistory);
   } catch (error: any) {
     console.error("Error in getInventoryLogs:", error.message || error);
-    res.status(500).json({
-      error: "Internal Server Error",
-      details: error.message || "An unexpected error occurred.",
-    });
+    sendResponse(res, 500, error.message || "An unexpected error occurred.");
   }
 };
 
@@ -60,9 +50,7 @@ export const restockProduct = async (
   try {
     // 1. Guard Clause: Authentication Check
     if (!req.user || !req.user.uid) {
-      res
-        .status(401)
-        .json({ error: "Unauthorized: Missing authentication token." });
+      sendResponse(res, 401, "Unauthorized: Missing authentication token.");
       return;
     }
 
@@ -70,9 +58,7 @@ export const restockProduct = async (
 
     // 2. Guard Clause: Authorization Check (403 Forbidden is ideal here)
     if (role !== "admin") {
-      res
-        .status(403)
-        .json({ error: "Forbidden: Administrative access required." });
+      sendResponse(res, 403, "Forbidden: Administrative access required.");
       return;
     }
 
@@ -85,11 +71,7 @@ export const restockProduct = async (
       isNaN(Number(quantity)) ||
       Number(quantity) <= 0
     ) {
-      res.status(400).json({
-        error: "Bad Request",
-        message:
-          "A valid productId and a positive restock quantity are required.",
-      });
+      sendResponse(res, 400, "A valid productId and a positive restock quantity are required.");
       return;
     }
 
@@ -100,7 +82,7 @@ export const restockProduct = async (
     });
 
     if (!currentProduct) {
-      res.status(404).json({ error: "Product not found" });
+      sendResponse(res, 404, "Product not found");
       return;
     }
 
@@ -125,19 +107,10 @@ export const restockProduct = async (
       },
     });
 
-    res.status(200).json({
-      success: true,
-      message: "Product restocked successfully.",
-      data: updatedProduct,
-    });
+    sendResponse(res, 200, "Product restocked successfully.", updatedProduct);
   } catch (error: any) {
     console.error("Error in restockProduct:", error.message || error);
-    res.status(500).json({
-      error: "Internal Server Error",
-      details:
-        error.message ||
-        "An unexpected error occurred during the restock operation.",
-    });
+    sendResponse(res, 500, error.message || "An unexpected error occurred during the restock operation.");
   }
 };
 
@@ -153,9 +126,7 @@ export const adjustInventory = async (
 
     // 1. Guard Clause: Authentication Check
     if (!req.user || !req.user.uid) {
-      res
-        .status(401)
-        .json({ error: "Unauthorized: Missing authentication token." });
+      sendResponse(res, 401, "Unauthorized: Missing authentication token.");
       return;
     }
 
@@ -163,9 +134,7 @@ export const adjustInventory = async (
 
     // 2. Guard Clause: Authorization Check (403 Forbidden is ideal here)
     if (role !== "admin") {
-      res
-        .status(403)
-        .json({ error: "Forbidden: Administrative access required." });
+      sendResponse(res, 403, "Forbidden: Administrative access required.");
       return;
     }
 
@@ -177,10 +146,7 @@ export const adjustInventory = async (
       isNaN(Number(adjustment)) ||
       Number(adjustment) === 0
     ) {
-      res.status(404).json({
-        error:
-          "A valid productId and a non-zero adjustment value are required.",
-      });
+      sendResponse(res, 404, "A valid productId and a non-zero adjustment value are required.");
       return;
     }
 
@@ -190,9 +156,7 @@ export const adjustInventory = async (
     });
 
     if (!currentProduct) {
-      res.status(404).json({
-        error: "Product not found",
-      });
+      sendResponse(res, 404, "Product not found");
       return;
     }
 
@@ -200,10 +164,7 @@ export const adjustInventory = async (
     const changeValue = Number(adjustment);
 
     if (currentStock + changeValue < 0) {
-      res.status(400).json({
-        error: "Bad Request",
-        message: `Invalid adjustment. Current stock is ${currentStock}, cannot reduce by ${Math.abs(changeValue)}.`,
-      });
+      sendResponse(res, 400, `Invalid adjustment. Current stock is ${currentStock}, cannot reduce by ${Math.abs(changeValue)}.`);
       return;
     }
 
@@ -224,16 +185,9 @@ export const adjustInventory = async (
       },
     });
 
-    res.status(200).json({
-      success: true,
-      message: "Inventory adjusted successfully.",
-      data: updatedProduct,
-    });
+    sendResponse(res, 200, "Inventory adjusted successfully.", updatedProduct);
   } catch (error: any) {
     console.error("Error in adjustInventory:", error.message || error);
-    res.status(500).json({
-      error: "Internal Server Error",
-      details: error.message || "An unexpected error occurred.",
-    });
+    sendResponse(res, 500, error.message || "An unexpected error occurred.");
   }
 };

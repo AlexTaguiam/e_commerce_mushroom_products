@@ -1,13 +1,12 @@
 import { Request, Response } from "express";
 import prisma from "../config/db";
 import { ROLES } from "../constants/enums";
+import { sendResponse } from "../utils/reponseHandler";
 
 export const syncUser = async (req: Request, res: Response): Promise<void> => {
   // Security Guard: req.user is extracted by your verifyFirebaseToken middleware
   if (!req.user) {
-    res
-      .status(401)
-      .json({ error: "Unauthorized: Missing user authentication context" });
+    sendResponse(res, 401, "Unauthorized: Missing user authentication context");
     return;
   }
 
@@ -17,9 +16,7 @@ export const syncUser = async (req: Request, res: Response): Promise<void> => {
   const { phone, address } = req.body;
 
   if (!email) {
-    res.status(400).json({
-      error: "Bad Request: Firebase account is missing a valid email address",
-    });
+    sendResponse(res, 400, "Bad Request: Firebase account is missing a valid email address");
     return;
   }
 
@@ -41,18 +38,13 @@ export const syncUser = async (req: Request, res: Response): Promise<void> => {
         name: name || "",
         phone: phone || null,
         address: address || null,
-        role: ROLES[0], // Defaults new signups to 'customer'
+        role: ROLES[0], // Defaults new signup to 'customer'
       },
     });
 
-    res.status(200).json({
-      message: "User identity successfully synchronized.",
-      user: databaseUser,
-    });
+    sendResponse(res, 200, "User identity successfully synchronized.", databaseUser);
   } catch (error) {
     console.error("Prisma Auth Sync Error:", error);
-    res.status(500).json({
-      error: "Internal Server Error: Failed to synchronize user profile.",
-    });
+    sendResponse(res, 500, "Internal Server Error: Failed to synchronize user profile.");
   }
 };

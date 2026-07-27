@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../config/db";
+import { sendResponse } from "../utils/reponseHandler";
 
 // 1. Explicitly type the structure of incoming items for compile safety
 interface OrderItemInput {
@@ -14,9 +15,7 @@ export const createOrder = async (
   try {
     // Ensure the user context has been successfully verified via authentication middleware
     if (!req.user || !req.user.uid) {
-      res
-        .status(401)
-        .json({ error: "Unauthorized: Invalid authentication session." });
+      sendResponse(res, 401, "Unauthorized: Invalid authentication session.");
       return;
     }
 
@@ -37,9 +36,7 @@ export const createOrder = async (
 
     // Checks the item if its not empty
     if (!items || items.length === 0) {
-      res
-        .status(400)
-        .json({ error: "Bad Request: Your checkout cart cannot be empty." });
+      sendResponse(res, 400, "Bad Request: Your checkout cart cannot be empty.");
       return;
     }
 
@@ -49,9 +46,7 @@ export const createOrder = async (
     });
 
     if (!databaseUser) {
-      res
-        .status(404)
-        .json({ error: "Not Found: User record could not be resolved." });
+      sendResponse(res, 404, "Not Found: User record could not be resolved.");
       return;
     }
 
@@ -65,7 +60,7 @@ export const createOrder = async (
         });
 
         if (!product) {
-          res.status(404).json({ error: "Product not found" });
+          sendResponse(res, 404, "Product not found");
           return;
         }
 
@@ -73,7 +68,7 @@ export const createOrder = async (
           product.status !== "active" ||
           product.stockQuantity <= item.quantity
         ) {
-          res.status(400).json({ error: "Insufficint amount of stacks " });
+          sendResponse(res, 400, "Insufficint amount of stacks ");
           return;
         }
 
@@ -124,8 +119,7 @@ export const createOrder = async (
       return { order: newOrder, payment: paymentLog };
     });
 
-    res.status(201).json({
-      message: "Order Placed Successfully!",
+    sendResponse(res, 201, "Order Placed Successfully!", {
       orderId: result?.order.orderId,
       totalAmount: result?.order.totalAmount,
       itemsCoumt: result?.order.orderItems.length,
@@ -136,12 +130,7 @@ export const createOrder = async (
       "Critical Transaction Checkout Failure: ",
       error.message || error,
     );
-    res.status(400).json({
-      error: "Checkout Transaction Interrupted",
-      details:
-        error.message ||
-        "An unhandled exception occurred during transaction verification.",
-    });
+    sendResponse(res, 400, error.message || "An unhandled exception occurred during transaction verification.");
   }
 };
 
@@ -152,9 +141,7 @@ export const createOrder = async (
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.uid) {
-      res.status(401).json({
-        error: "Unauthorized: Missing authentication token.",
-      });
+      sendResponse(res, 401, "Unauthorized: Missing authentication token.");
       return;
     }
 
@@ -202,18 +189,10 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
       },
     });
 
-    res.status(200).json({
-      success: true,
-      count: orders.length,
-      orders,
-    });
+    sendResponse(res, 200, "Orders retrieved successfully", { count: orders.length, orders });
   } catch (error: any) {
     console.error("Unable to get orders ", error.message || error);
-    res.status(400).json({
-      error: "Getting Orders Interrupted",
-      details:
-        error.message || "An unhandled exception occurred in getting orders.",
-    });
+    sendResponse(res, 400, error.message || "An unhandled exception occurred in getting orders.");
   }
 };
 
@@ -223,9 +202,7 @@ export const getOrderById = async (
 ): Promise<void> => {
   try {
     if (!req.user || !req.user.uid) {
-      res.status(401).json({
-        error: "Unauthorized: Missing authentication token.",
-      });
+      sendResponse(res, 401, "Unauthorized: Missing authentication token.");
       return;
     }
 
@@ -236,9 +213,7 @@ export const getOrderById = async (
     console.log("Order ID:", orderId);
 
     if (isNaN(orderId)) {
-      res.status(400).json({
-        error: "Bad Request: Invalid format for target order ID identifier.",
-      });
+      sendResponse(res, 400, "Bad Request: Invalid format for target order ID identifier.");
       return;
     }
 
@@ -273,28 +248,17 @@ export const getOrderById = async (
     });
 
     if (!order) {
-      res.status(404).json({
-        error:
-          "Not Found: The requested order record could not be resolved or access is restricted.",
-      });
+      sendResponse(res, 404, "Not Found: The requested order record could not be resolved or access is restricted.");
       return; // 👈 FIXED: Safely exits execution context
     }
 
-    res.status(200).json({
-      success: true,
-      order,
-    });
+    sendResponse(res, 200, "Order retrieved successfully", order);
   } catch (error: any) {
     console.error(
       "Unable to capture order profile logs:",
       error.message || error,
     );
-    res.status(400).json({
-      error: "Getting Order details Interrupted",
-      details:
-        error.message ||
-        "An unhandled engine exception occurred while handling retrieval commands.",
-    });
+    sendResponse(res, 400, error.message || "An unhandled engine exception occurred while handling retrieval commands.");
   }
 };
 
@@ -317,9 +281,7 @@ export const confirmOrder = async (
 
     // Enforce role-based access control
     if (role !== "admin") {
-      res.status(403).json({
-        error: "Unauthorized: Only administrators can confirm orders.",
-      });
+      sendResponse(res, 403, "Unauthorized: Only administrators can confirm orders.");
       return;
     }
 
@@ -331,16 +293,12 @@ export const confirmOrder = async (
 
     // 3. State Guards: Verify order exists and is eligible for confirmation
     if (!targetOrder) {
-      res
-        .status(404)
-        .json({ error: "Not Found: Target order could not be located." });
+      sendResponse(res, 404, "Not Found: Target order could not be located.");
       return;
     }
 
     if (targetOrder.status !== "pending") {
-      res.status(400).json({
-        error: `Bad Request: Cannot confirm this order. Current status is already '${targetOrder.status}'.`,
-      });
+      sendResponse(res, 400, `Bad Request: Cannot confirm this order. Current status is already '${targetOrder.status}'.`);
       return;
     }
 
@@ -397,39 +355,24 @@ export const confirmOrder = async (
     });
 
     // 6. Return Success Payload
-    res.status(200).json({
-      success: true,
-      message: `Order #${orderId} confirmed successfully. Inventory stock levels updated.`,
-    });
+    sendResponse(res, 200, `Order #${orderId} confirmed successfully. Inventory stock levels updated.`);
   } catch (error: any) {
     console.error("Unable to Confirm Order:", error.message || error);
 
     // Custom Error Router: Check if the transaction failed due to our explicit stock checks
     if (error.message.startsWith("INSUFFICIENT_STOCK:")) {
       const productName = error.message.split(":")[1];
-      res.status(400).json({
-        error: "Inventory Error",
-        details: `Insufficient stock on hand for product: ${productName}. Transaction rolled back safely.`,
-      });
+      sendResponse(res, 400, `Insufficient stock on hand for product: ${productName}. Transaction rolled back safely.`);
       return;
     }
 
     if (error.message.startsWith("PRODUCT_NOT_FOUND:")) {
-      res.status(404).json({
-        error: "Inventory Error",
-        details:
-          "One or more items in the order point to a product that no longer exists.",
-      });
+      sendResponse(res, 404, "One or more items in the order point to a product that no longer exists.");
       return;
     }
 
     // Standard Fallback catch-all for database drops or driver dropouts
-    res.status(500).json({
-      error: "Confirming Order Interrupted",
-      details:
-        error.message ||
-        "An unhandled execution exception occurred inside the transaction database engine.",
-    });
+    sendResponse(res, 500, error.message || "An unhandled execution exception occurred inside the transaction database engine.");
   }
 };
 
@@ -440,9 +383,7 @@ export const updateOrderStatus = async (
   try {
     // 1. Guard Clause: Authenticate Session Context
     if (!req.user || !req.user.uid) {
-      res
-        .status(401)
-        .json({ error: "Unauthorized: Missing authentication token." });
+      sendResponse(res, 401, "Unauthorized: Missing authentication token.");
       return;
     }
 
@@ -452,9 +393,7 @@ export const updateOrderStatus = async (
 
     // 2. Enforce role-based access control
     if (role !== "admin") {
-      res.status(403).json({
-        error: "Unauthorized: Only administrators can update order status.",
-      });
+      sendResponse(res, 403, "Unauthorized: Only administrators can update order status.");
       return;
     }
 
@@ -464,7 +403,7 @@ export const updateOrderStatus = async (
     });
 
     if (!order) {
-      res.status(404).json({ error: "Order not found." });
+      sendResponse(res, 404, "Order not found.");
       return;
     }
 
@@ -473,9 +412,7 @@ export const updateOrderStatus = async (
 
     // 4. Quick check: Is it already in the target status?
     if (currentStatus === targetStatus) {
-      res
-        .status(400)
-        .json({ error: `Order is already in '${targetStatus}' status.` });
+      sendResponse(res, 400, `Order is already in '${targetStatus}' status.`);
       return;
     }
 
@@ -507,23 +444,17 @@ export const updateOrderStatus = async (
 
       case "completed":
         // Once completed, it's locked down forever
-        res
-          .status(400)
-          .json({ error: "Cannot modify an order that is already completed." });
+        sendResponse(res, 400, "Cannot modify an order that is already completed.");
         return;
 
       default:
-        res
-          .status(400)
-          .json({ error: `Unhandled current status: ${currentStatus}` });
+        sendResponse(res, 400, `Unhandled current status: ${currentStatus}`);
         return;
     }
 
     // If the requested status skipped a track step, reject it
     if (!isValidTransition) {
-      res.status(400).json({
-        error: `Invalid status track. Cannot move a ${fulfillmentType} order from '${currentStatus}' straight to '${targetStatus}'.`,
-      });
+      sendResponse(res, 400, `Invalid status track. Cannot move a ${fulfillmentType} order from '${currentStatus}' straight to '${targetStatus}'.`);
       return;
     }
 
@@ -541,18 +472,10 @@ export const updateOrderStatus = async (
       data: updateData,
     });
 
-    res.status(200).json({
-      success: true,
-      message: `Order status successfully updated to ${targetStatus}.`,
-      order: updatedOrder,
-    });
+    sendResponse(res, 200, `Order status successfully updated to ${targetStatus}.`, updatedOrder);
   } catch (error: any) {
     console.error("Unable to update order status:", error.message || error);
-    res.status(500).json({
-      error: "Updating Order Interrupted",
-      details:
-        error.message || "An error occurred on the database engine level.",
-    });
+    sendResponse(res, 500, error.message || "An error occurred on the database engine level.");
   }
 };
 
@@ -562,9 +485,7 @@ export const cancelOrder = async (
 ): Promise<void> => {
   try {
     if (!req.user || !req.user.uid) {
-      res
-        .status(401)
-        .json({ error: "Unauthorized: Missing authentication token." });
+      sendResponse(res, 401, "Unauthorized: Missing authentication token.");
       return;
     }
 
@@ -578,15 +499,13 @@ export const cancelOrder = async (
     });
 
     if (!order) {
-      res.status(404).json({ error: "Order not found." });
+      sendResponse(res, 404, "Order not found.");
       return;
     }
 
     if (role !== "admin") {
       if (uid !== order?.userId) {
-        res.status(403).json({
-          error: "Unauthorized: You do not own this order.",
-        });
+        sendResponse(res, 403, "Unauthorized: You do not own this order.");
         return;
       }
       whereClause.userId = uid;
@@ -600,16 +519,12 @@ export const cancelOrder = async (
     ]);
 
     if (nonCancellableStatuses.has(order.status)) {
-      res.status(400).json({
-        error: "Order already confirmed and cannot be cancelled",
-      });
+      sendResponse(res, 400, "Order already confirmed and cannot be cancelled");
       return;
     }
 
     if (order.status === "cancelled") {
-      res.status(400).json({
-        error: "order is already cancelled",
-      });
+      sendResponse(res, 400, "order is already cancelled");
       return;
     }
 
@@ -626,17 +541,9 @@ export const cancelOrder = async (
       },
     });
 
-    res.status(200).json({
-      success: true,
-      message: `Order Successfully cancelled.`,
-      order: completedCancellation,
-    });
+    sendResponse(res, 200, "Order Successfully cancelled.", completedCancellation);
   } catch (error: any) {
     console.error("Unable to cancel order:", error.message || error);
-    res.status(500).json({
-      error: "Cancelling Order Interrupted",
-      details:
-        error.message || "An error occurred on the database engine level.",
-    });
+    sendResponse(res, 500, error.message || "An error occurred on the database engine level.");
   }
 };

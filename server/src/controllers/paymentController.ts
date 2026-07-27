@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../config/db";
 import paymongo from "../config/paymongo";
+import { sendResponse } from "../utils/reponseHandler";
 
 export const createPaymentIntent = async (
   req: Request,
@@ -10,7 +11,7 @@ export const createPaymentIntent = async (
   const uid = req.user!.uid;
 
   if (!order_id) {
-    res.status(400).json({ error: "order_id is required" });
+    sendResponse(res, 400, "order_id is required");
     return;
   }
 
@@ -21,24 +22,22 @@ export const createPaymentIntent = async (
     });
 
     if (!order) {
-      res.status(404).json({ error: "Order not found" });
+      sendResponse(res, 404, "Order not found");
       return;
     }
 
     if (order.userId !== uid) {
-      res.status(403).json({ error: "This order does not belong to you" });
+      sendResponse(res, 403, "This order does not belong to you");
       return;
     }
 
     if (order.paymentMethod !== "paymongo") {
-      res
-        .status(400)
-        .json({ error: "This order is not set up for online payment" });
+      sendResponse(res, 400, "This order is not set up for online payment");
       return;
     }
 
     if (order.paymentStatus === "paid") {
-      res.status(400).json({ error: "This order has already been paid" });
+      sendResponse(res, 400, "This order has already been paid");
       return;
     }
 
@@ -90,7 +89,7 @@ export const createPaymentIntent = async (
       data: { transactionRef: paymentIntent.id },
     });
 
-    res.status(200).json({
+    sendResponse(res, 200, "Payment intent created successfully", {
       checkout_url: checkoutUrl,
       payment_intent_id: paymentIntent.id,
       client_key: attached.attributes.client_key,
@@ -101,7 +100,7 @@ export const createPaymentIntent = async (
       "createPaymentIntent error:",
       error.response?.data || error.message,
     );
-    res.status(500).json({ error: "Failed to create payment intent" });
+    sendResponse(res, 500, "Failed to create payment intent");
     return;
   }
 };
