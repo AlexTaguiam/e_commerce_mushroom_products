@@ -1,6 +1,6 @@
 // Update your App.tsx imports to look like this:
-import { AuthProvider } from "./context/AuthProvider";
-import { useAuth } from "./context/AuthContext";
+// import { AuthProvider } from "./context/AuthProvider";
+// import { useAuth } from "./context/authContext";
 
 function App() {
   return (
