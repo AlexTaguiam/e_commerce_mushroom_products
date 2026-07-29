@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getAuth, onAuthStateChanged, type User } from "firebase/auth";
-import { AuthContext, type AuthUserTemplate } from "./AuthContext";
+import { AuthContext, type AuthUserTemplate } from "./authContext";
 import {
   loginUser,
   registerUser,
