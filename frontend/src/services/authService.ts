@@ -4,7 +4,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   FacebookAuthProvider,
-  signInWithPopup, // Complies with verbatimModuleSyntax
+  signInWithPopup,
 } from "firebase/auth";
 
 import { api } from "../api/client";
