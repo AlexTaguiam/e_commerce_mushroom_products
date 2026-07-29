@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import {
   Mail,
   Lock,
@@ -48,12 +49,12 @@ export default function LoginPage() {
               </h2>
               <p className="text-sm text-gray-500 font-medium">
                 Don't have an account?{" "}
-                <a
-                  href="#"
+                <Link
+                  to="/register"
                   className="text-[#4c6a46] hover:underline underline-offset-4 font-semibold "
                 >
                   Register now
-                </a>
+                </Link>
               </p>
             </div>
 
