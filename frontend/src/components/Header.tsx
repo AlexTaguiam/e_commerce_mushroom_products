@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingBag, User, LogOut, LayoutDashboard, ShoppingCart, Package } from "lucide-react";
+import { ShoppingBag, LogOut, LayoutDashboard, ShoppingCart, Package } from "lucide-react";
 import { useAuth } from "../context/authContext";
 
 export const Header: React.FC = () => {
