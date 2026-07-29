@@ -4,47 +4,63 @@ import { ROLES } from "../constants/enums";
 import { sendResponse } from "../utils/reponseHandler";
 
 export const syncUser = async (req: Request, res: Response): Promise<void> => {
-  // Security Guard: req.user is extracted by your verifyFirebaseToken middleware
+  // Security Guard: verified token context validation wrapper
   if (!req.user) {
     sendResponse(res, 401, "Unauthorized: Missing user authentication context");
     return;
   }
 
-  const { uid, email, name } = req.user;
+  const { uid, email, name: firebaseName } = req.user;
 
-  // Custom metadata fields optional on registration registration
-  const { phone, address } = req.body;
+  // Extract custom text fields out of the incoming JSON body payload
+  const { name: bodyName, phone, address } = req.body;
 
   if (!email) {
-    sendResponse(res, 400, "Bad Request: Firebase account is missing a valid email address");
+    sendResponse(
+      res,
+      400,
+      "Bad Request: Firebase account is missing a valid email address",
+    );
     return;
   }
 
+  // ⚡ Unify: Favor the form data body value, fall back to the token meta-strings
+  const finalName = bodyName || firebaseName || "";
+
   try {
-    // Prisma Upsert: Atomically handles creation or profile updates
+    // Prisma Upsert: Atomically handles creation or profile updates dynamically
     const databaseUser = await prisma.user.upsert({
       where: {
         firebaseUid: uid,
       },
       update: {
-        // Only updates fields if values are supplied by the client request payload
-        name: name || undefined,
+        // Prevents overwriting valid data with undefined if running a plain login sync
+        name: finalName || undefined,
         phone: phone || undefined,
         address: address || undefined,
       },
       create: {
         firebaseUid: uid,
         email: email,
-        name: name || "",
+        name: finalName,
         phone: phone || null,
         address: address || null,
-        role: ROLES[0], // Defaults new signup to 'customer'
+        role: ROLES[0], // Defaults new signup schemas to 'customer'
       },
     });
 
-    sendResponse(res, 200, "User identity successfully synchronized.", databaseUser);
+    sendResponse(
+      res,
+      200,
+      "User identity successfully synchronized.",
+      databaseUser,
+    );
   } catch (error) {
     console.error("Prisma Auth Sync Error:", error);
-    sendResponse(res, 500, "Internal Server Error: Failed to synchronize user profile.");
+    sendResponse(
+      res,
+      500,
+      "Internal Server Error: Failed to synchronize user profile.",
+    );
   }
 };

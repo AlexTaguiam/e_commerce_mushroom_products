@@ -4,18 +4,18 @@ import {
   signInWithEmailAndPassword,
   signOut,
   FacebookAuthProvider,
-  signInWithPopup,
-  type UserCredential, // 👈 Added 'type' keyword for verbatimModuleSyntax compatibility
+  signInWithPopup, // Complies with verbatimModuleSyntax
 } from "firebase/auth";
 
 import { api } from "../api/client";
 
 export interface UserProfile {
   id: number;
-  firebase_uid: string;
+  firebaseUid: string; // Updated to camelCase to match your backend Prisma schema exactly
   email: string;
   name: string | null;
   phone: string | null;
+  address: string | null; // Added address to match backend capability
   role: string;
   status: string;
 }
@@ -27,7 +27,7 @@ export interface AuthResponse {
 }
 
 /**
- * Registers a new user with Email/Password and syncs the profile to the database
+ * 1. Registers a new user with Firebase and passes form metadata to the dynamic sync gateway
  */
 export const registerUser = async (
   email: string,
@@ -36,31 +36,24 @@ export const registerUser = async (
   phone: string,
 ): Promise<AuthResponse> => {
   try {
-    // Fixed casing: changed variable name from 'UserCredential' to 'userCredential' to avoid clashing with the type
-    const userCredential: UserCredential = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password,
-    );
-    const firebaseUser = userCredential.user;
+    await createUserWithEmailAndPassword(auth, email, password);
 
-    const signupData = {
-      firebase_uid: firebaseUser.uid,
-      email: firebaseUser.email,
-      name: name,
-      phone: phone,
-    };
+    // Pass the custom form details inside the body payload.
+    // The backend middleware will automatically extract the Firebase UID and Email from the token header.
+    const response = await api.post<AuthResponse>("/auth/sync", {
+      name,
+      phone,
+    });
 
-    const response = await api.post<AuthResponse>("/auth/signup", signupData);
     return response.data;
   } catch (error) {
-    console.error("Registration and sync service failure:", error);
+    console.error("Registration and backend database sync failure:", error);
     throw error;
   }
 };
 
 /**
- * Authenticates an existing user using Email/Password and retrieves their profile
+ * 2. Authenticates an existing user and hits the sync gateway to verify/retrieve their database row
  */
 export const loginUser = async (
   email: string,
@@ -69,50 +62,37 @@ export const loginUser = async (
   try {
     await signInWithEmailAndPassword(auth, email, password);
 
-    const response = await api.get<AuthResponse>("/auth/me");
+    // No body payload needed for normal login.
+    // The backend middleware decodes the token, and the upsert runs the update branch safely.
+    const response = await api.post<AuthResponse>("/auth/sync", {});
     return response.data;
   } catch (error) {
-    console.error("Login session service failure:", error);
+    console.error("Login session and database refresh failure:", error);
     throw error;
   }
 };
 
 /**
- * Authenticates a user using Facebook Pop-up Login and syncs/retrieves their profile
+ * 3. Triggers Facebook popup login and passes the identity context to the sync gateway
  */
 export const loginWithFacebook = async (): Promise<AuthResponse> => {
   try {
     const provider = new FacebookAuthProvider();
+    await signInWithPopup(auth, provider);
 
-    // Triggers the official Facebook authentication popup window
-    const userCredential: UserCredential = await signInWithPopup(
-      auth,
-      provider,
-    );
-    const firebaseUser = userCredential.user;
-
-    // Package Facebook profile data to synchronize with your Prisma database
-    const socialSyncData = {
-      firebase_uid: firebaseUser.uid,
-      email: firebaseUser.email,
-      name: firebaseUser.displayName || "Facebook User",
-      phone: firebaseUser.phoneNumber || null,
-    };
-
-    // Hits a sync endpoint that logs them in if they exist, or registers them as a 'customer' if new
-    const response = await api.post<AuthResponse>(
-      "/auth/social-sync",
-      socialSyncData,
-    );
+    // No body payload needed here either!
+    // Your updated backend controller automatically falls back to token claims:
+    // finalName = bodyName || firebaseName || ""
+    const response = await api.post<AuthResponse>("/auth/sync", {});
     return response.data;
   } catch (error) {
-    console.error("Facebook authentication and sync failure:", error);
+    console.error("Facebook authentication and database sync failure:", error);
     throw error;
   }
 };
 
 /**
- * Signs the user out of the active Firebase session
+ * 4. Clears the active authentication session tokens
  */
 export const logOut = async (): Promise<void> => {
   try {
