@@ -12,6 +12,9 @@ export const syncUser = async (req: Request, res: Response): Promise<void> => {
 
   const { uid, email, name: firebaseName } = req.user;
 
+  console.log("uid: ", uid);
+  console.log("email: ", email);
+
   // Extract custom text fields out of the incoming JSON body payload
   const { name: bodyName, phone, address } = req.body;
 

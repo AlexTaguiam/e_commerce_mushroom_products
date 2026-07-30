@@ -32,17 +32,17 @@ export interface AuthResponse {
 export const registerUser = async (
   email: string,
   password: string,
-  name: string,
-  phone: string,
+  name: string | null,
+  phone: string | null,
+  address: string | null,
 ): Promise<AuthResponse> => {
   try {
     await createUserWithEmailAndPassword(auth, email, password);
 
-    // Pass the custom form details inside the body payload.
-    // The backend middleware will automatically extract the Firebase UID and Email from the token header.
     const response = await api.post<AuthResponse>("/auth/sync", {
       name,
       phone,
+      address,
     });
 
     return response.data;
@@ -61,7 +61,7 @@ export const loginUser = async (
 ): Promise<AuthResponse> => {
   try {
     await signInWithEmailAndPassword(auth, email, password);
-
+    console.log("triggered");
     // No body payload needed for normal login.
     // The backend middleware decodes the token, and the upsert runs the update branch safely.
     const response = await api.post<AuthResponse>("/auth/sync", {});

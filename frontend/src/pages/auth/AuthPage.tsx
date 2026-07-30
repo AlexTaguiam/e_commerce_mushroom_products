@@ -20,6 +20,7 @@ import {
   Zap,
   Check,
 } from "lucide-react";
+import { loginUser, registerUser } from "@/services/authService";
 
 // ---------------------------------------------------------------------------
 // Form variant animation config
@@ -120,16 +121,41 @@ interface LoginFormProps {
   onSwitch: () => void;
 }
 
+interface LoginPayload {
+  email: string;
+  password: string;
+}
+
 function LoginForm({ onSwitch }: LoginFormProps) {
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+
     const formData = new FormData(e.currentTarget);
-    console.log("Login Request Data:", Object.fromEntries(formData));
-    setTimeout(() => setIsLoading(false), 1000);
+    const payload: LoginPayload = {
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+    };
+
+    setIsLoading(true);
+    try {
+      const response = await loginUser(payload.email, payload.password);
+
+      console.log("Login: ", response);
+      if (response.data.role !== "admin") {
+        navigate("/");
+      }
+
+      navigate("/admin");
+    } catch (err) {
+      console.error("Login failed:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -171,7 +197,7 @@ function LoginForm({ onSwitch }: LoginFormProps) {
               type="email"
               required
               placeholder="example@mushroomharvest.com"
-              className="w-full h-12 pl-12 pr-4 text-base bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#4c6a46] focus:ring-2 focus:ring-[#4c6a46]/20 transition-all shadow-sm placeholder:text-gray-300"
+              className="w-full h-12 pl-12 pr-4 text-base text-[#4c6a46] bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#4c6a46] focus:ring-2 focus:ring-[#4c6a46]/20 transition-all shadow-sm placeholder:text-gray-300"
             />
           </div>
         </div>
@@ -192,7 +218,7 @@ function LoginForm({ onSwitch }: LoginFormProps) {
               type={showPassword ? "text" : "password"}
               required
               placeholder="••••••••"
-              className="w-full h-12 pl-12 pr-12 text-base bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#4c6a46] focus:ring-2 focus:ring-[#4c6a46]/20 transition-all shadow-sm"
+              className="w-full h-12 pl-12 pr-12 text-base text-[#4c6a46] bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#4c6a46] focus:ring-2 focus:ring-[#4c6a46]/20 transition-all shadow-sm"
             />
             <button
               type="button"
@@ -245,25 +271,27 @@ interface RegisterFormProps {
 
 interface RegisterPayload {
   email: string;
+  password: string;
   name: string | null;
   phone: string | null;
   address: string | null;
-  password?: string;
 }
 
 function RegisterForm({ onSwitch }: RegisterFormProps) {
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!agreedToTerms) {
       alert("Please agree to the Terms of Service and Privacy Policy.");
       return;
     }
-    setIsLoading(true);
+
     const formData = new FormData(e.currentTarget);
     const payload: RegisterPayload = {
       email: formData.get("email") as string,
@@ -272,12 +300,33 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
       phone: (formData.get("phone") as string) || null,
       address: (formData.get("address") as string) || null,
     };
-    console.log("Registration Payload Generated:", payload);
-    setTimeout(() => setIsLoading(false), 1200);
+
+    setIsLoading(true);
+    try {
+      const response = await registerUser(
+        payload.email,
+        payload.password,
+        payload.name,
+        payload.phone,
+        payload.address,
+      );
+
+      console.log("Register: ", response);
+
+      if (response.data.role !== "admin") {
+        navigate("/");
+      }
+
+      navigate("/admin");
+    } catch (err) {
+      console.error("Registration failed:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const inputClass =
-    "w-full h-12 pl-12 pr-4 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#4c6a46] focus:ring-2 focus:ring-[#4c6a46]/20 transition-all shadow-sm placeholder:text-gray-300";
+    "w-full text-[#4c6a46] h-12 pl-12 pr-4 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#4c6a46] focus:ring-2 focus:ring-[#4c6a46]/20 transition-all shadow-sm placeholder:text-gray-300";
 
   return (
     <div className="space-y-5">
@@ -400,7 +449,7 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
               type={showPassword ? "text" : "password"}
               required
               placeholder="••••••••"
-              className="w-full h-12 pl-12 pr-12 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#4c6a46] focus:ring-2 focus:ring-[#4c6a46]/20 transition-all shadow-sm"
+              className="w-full h-12 pl-12 pr-12 text-[#4c6a46] text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#4c6a46] focus:ring-2 focus:ring-[#4c6a46]/20 transition-all shadow-sm"
             />
             <button
               type="button"
@@ -432,7 +481,7 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
               type={showConfirmPassword ? "text" : "password"}
               required
               placeholder="••••••••"
-              className="w-full h-12 pl-12 pr-12 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#4c6a46] focus:ring-2 focus:ring-[#4c6a46]/20 transition-all shadow-sm"
+              className="w-full h-12 pl-12 text-[#4c6a46] pr-12 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#4c6a46] focus:ring-2 focus:ring-[#4c6a46]/20 transition-all shadow-sm"
             />
             <button
               type="button"

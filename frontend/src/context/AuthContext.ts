@@ -1,3 +1,4 @@
+// authContext.ts
 import { createContext, useContext } from "react";
 import type { User } from "firebase/auth";
 
@@ -14,23 +15,13 @@ export interface AuthContextType {
   profile: AuthUserTemplate | null;
   role: "admin" | "customer" | null;
   loading: boolean;
-  loginWithEmail: (email: string, password: string) => Promise<void>;
-  registerWithEmail: (
-    email: string,
-    password: string,
-    name: string,
-    phone: string,
-  ) => Promise<void>;
-  loginWithFB: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
-// 1. Create the base context instance
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined,
 );
 
-// 2. Export the custom hook cleanly from here
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
