@@ -2,8 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
 
-import LoginPage from "../pages/auth/LoginPage";
-import RegisterPage from "../pages/auth/RegisterPage";
+import AuthPage from "../pages/auth/AuthPage";
 
 import CatalogPage from "../pages/customer/CatalogPage";
 import CartPage from "../pages/customer/CartPage";
@@ -32,8 +31,8 @@ const AdminLayout = () => (
 
 const publicRoutes = (
   <>
-    <Route path="/login" element={<LoginPage />} />
-    <Route path="/register" element={<RegisterPage />} />
+    <Route path="/login" element={<AuthPage />} />
+    <Route path="/register" element={<AuthPage />} />
   </>
 );
 
