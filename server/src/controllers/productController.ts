@@ -4,6 +4,32 @@ import cloudinary from "../config/cloudinary";
 import { PRODUCT_CATEGORY, PRODUCT_STATUS } from "../constants/enums";
 import { sendResponse } from "../utils/reponseHandler";
 
+// --- GET FEATURED PRODUCTS ---
+export async function getFeaturedProducts(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        status: "active",
+      },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+    });
+
+    sendResponse(
+      res,
+      200,
+      "Featured products retrieved successfully",
+      products,
+    );
+  } catch (error) {
+    console.error("Error in getFeaturedProducts:", error);
+    sendResponse(res, 500, "Failed to fetch featured products");
+  }
+}
+
 // --- GET ALL PRODUCTS ---
 export async function getProducts(req: Request, res: Response): Promise<void> {
   try {
@@ -95,7 +121,11 @@ export async function createProduct(
         imageUrl = uploadResult.secure_url;
       } catch (uploadError) {
         console.error("Cloudinary upload failed:", uploadError);
-        return sendResponse(res, 500, "Image upload failed. Product creation aborted.");
+        return sendResponse(
+          res,
+          500,
+          "Image upload failed. Product creation aborted.",
+        );
       }
     }
 

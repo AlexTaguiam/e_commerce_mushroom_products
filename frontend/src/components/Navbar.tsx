@@ -64,10 +64,10 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-[#faf8f4]/95 backdrop-blur-md border-b border-gray-100 shadow-sm font-sans antialiased">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* BRAND LOGO AREA */}
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-20">
             <Link to="/" className="flex items-center gap-3 group">
               <div className="w-10 h-10 bg-[#4c6a46] rounded-xl flex items-center justify-center shadow-md shadow-[#4c6a46]/10 transition-transform group-hover:scale-105">
                 <span className="text-white font-serif text-xl font-bold">
@@ -75,7 +75,7 @@ export default function Navbar() {
                 </span>
               </div>
               <span className="font-serif font-bold text-xl text-[#2d4029] tracking-wide transition-colors group-hover:text-[#4c6a46]">
-                Alhona Mushrooms
+                B&J Mushrooms
               </span>
             </Link>
 
@@ -96,7 +96,7 @@ export default function Navbar() {
                       }
                     `}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-6 h-6" />
                     {item.name}
                   </NavLink>
                 );
@@ -106,26 +106,6 @@ export default function Navbar() {
 
           {/* UTILITY MODULE & AUTH STATES */}
           <div className="hidden md:flex items-center gap-4">
-            {/* Shopping Cart Trigger */}
-            <NavLink
-              to="/cart"
-              className={({ isActive }) => `
-                relative p-4.5 rounded-full transition-all duration-200 group
-                ${
-                  isActive
-                    ? "bg-[#4c6a46]/10 text-[#4c6a46]"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-[#2d4029]"
-                }
-              `}
-            >
-              <ShoppingBag className="w-6 h-6 transition-transform group-hover:scale-105" />
-              {cartCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#4c6a46] text-[10px] font-mono font-bold text-white ring-2 ring-[#faf8f4]">
-                  {cartCount}
-                </span>
-              )}
-            </NavLink>
-
             <div className="h-6 w-px bg-gray-200 mx-1" />
 
             {/* Auth Conditionals */}
@@ -209,6 +189,26 @@ export default function Navbar() {
                 </Link>
               </div>
             )}
+
+            {/* Shopping Cart Trigger */}
+            <NavLink
+              to="/cart"
+              className={({ isActive }) => `
+                relative p-4.5 rounded-full transition-all duration-200 group
+                ${
+                  isActive
+                    ? "bg-[#4c6a46]/10 text-[#4c6a46]"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-[#2d4029]"
+                }
+              `}
+            >
+              <ShoppingBag className="w-6 h-6 transition-transform group-hover:scale-105" />
+              {cartCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#4c6a46] text-[10px] font-mono font-bold text-white ring-2 ring-[#faf8f4]">
+                  {cartCount}
+                </span>
+              )}
+            </NavLink>
           </div>
 
           {/* MOBILE NAVIGATION PORTAL PANEL */}
@@ -246,7 +246,7 @@ export default function Navbar() {
                         <div className="w-8 h-8 bg-[#4c6a46] rounded-lg flex items-center justify-center text-white text-sm font-bold font-serif">
                           M
                         </div>
-                        Alhona Mushrooms
+                        B&J Mushrooms
                       </div>
                       <button
                         onClick={() => setIsMobileOpen(false)}

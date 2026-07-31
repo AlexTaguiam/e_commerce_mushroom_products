@@ -5,6 +5,7 @@ import {
   createProduct,
   updateProductStatus,
   updateProduct,
+  getFeaturedProducts,
 } from "../controllers/productController";
 import { verifyFirebaseToken } from "../middleware/verifyFirebaseToken";
 import { requireAdmin } from "../middleware/requireAdmin";
@@ -14,6 +15,7 @@ const router = Router();
 
 // customer endpoints
 router.get("/", getProducts);
+router.get("/featured", getFeaturedProducts);
 router.get("/:id", getProductById);
 
 // admin endpoints
