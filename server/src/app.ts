@@ -12,7 +12,13 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // 👈 swap this with your frontend URL
+    methods: ["GET", "POST", "PUT", "DELETE"], // allowed HTTP methods
+    credentials: true, // if you need cookies or auth headers
+  }),
+);
 app.use("/webhooks", paymongoWebhookRouter);
 app.use(express.json());
 app.use(globalLimiter); // Apply global rate limiter to all routes

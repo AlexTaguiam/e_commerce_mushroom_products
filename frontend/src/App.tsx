@@ -1,8 +1,8 @@
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthProvider";
 import { AppRouter } from "./routes/AppRouter";
-import { Header } from "./components/Header";
-import { Footer } from "./components/Footer";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 const Toaster = () => (
   <div className="fixed bottom-4 right-4 z-50 pointer-events-none" />
 ); // Toast notification mounting root
@@ -38,7 +38,7 @@ function AppShell() {
   return (
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-teal-500/30">
       {/* Customer layout maps globally if not structural or administrative page */}
-      {!hideGlobalLayout && <Header />}
+      {!hideGlobalLayout && <Navbar />}
 
       <div className="flex-1 flex flex-col">
         <AppRouter />
