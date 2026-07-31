@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useLayoutEffect, useRef } from "react";
 import {
   Search,
   ShoppingCart,
@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { killAllScrollTriggers } from "@/utils/scrollTriggerCleanup";
 
 // Register ScrollTrigger safely for environments utilizing SSR frameworks
 if (typeof window !== "undefined") {
@@ -72,48 +73,41 @@ export default function HowItWorks() {
   const componentRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // 1. Accessibility Check: Guard layout changes if reduced motion is enabled globally
+  useLayoutEffect(() => {
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    if (prefersReducedMotion || !componentRef.current || !trackRef.current)
+    if (prefersReducedMotion || !componentRef.current || !trackRef.current) {
       return;
+    }
 
-    // 2. Responsive Breakpoint Tracking: Encapsulate scroll-pin routines using matchMedia
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
 
-      // Only execute side-scroll pinning on desktop layouts (>= 1024px)
       mm.add("(min-width: 1024px)", () => {
         const track = trackRef.current!;
-
-        // Calculate the maximum horizontal sliding offset required to view all items
-        const totalScrollDistance = track.scrollWidth - window.innerWidth;
 
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: componentRef.current,
             pin: true,
-            scrub: 1, // Directly tracks manual scroll velocity with a smooth deceleration catchup
+            scrub: 1,
             start: "top top",
             end: () => `+=${track.scrollWidth}`,
             pinSpacing: true,
-            invalidateOnRefresh: true, // Recalculates screen track limits on window resizes
+            invalidateOnRefresh: true,
           },
         });
 
-        // Horizontal displacement animation
         tl.to(
           track,
           {
-            x: -totalScrollDistance,
+            x: () => -(track.scrollWidth - window.innerWidth),
             ease: "none",
           },
           0,
         );
 
-        // Synchronized background line filling visual marker progress
         tl.to(
           ".progress-line-fill",
           {
@@ -125,8 +119,10 @@ export default function HowItWorks() {
       });
     }, componentRef);
 
-    // 3. Complete memory cleanup on element lifecycle unmount stages
-    return () => ctx.revert();
+    return () => {
+      ctx.revert();
+      killAllScrollTriggers();
+    };
   }, []);
 
   return (

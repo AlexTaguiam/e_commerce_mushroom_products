@@ -1,8 +1,10 @@
+import { useLayoutEffect } from "react";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthProvider";
 import { AppRouter } from "./routes/AppRouter";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import { killAllScrollTriggers } from "./utils/scrollTriggerCleanup";
 const Toaster = () => (
   <div className="fixed bottom-4 right-4 z-50 pointer-events-none" />
 ); // Toast notification mounting root
@@ -25,6 +27,14 @@ const useErrorContext = () => ({
 function AppShell() {
   const location = useLocation();
   const { error } = useErrorContext();
+
+  // Kill pinned ScrollTriggers synchronously before React unmounts the old page.
+  // useLayoutEffect cleanup runs in the layout phase (before paint), not after unmount like useEffect.
+  useLayoutEffect(() => {
+    return () => {
+      killAllScrollTriggers();
+    };
+  }, [location.pathname]);
 
   // Dynamic Layout Rule Engine
   const isAdminRoute = location.pathname.startsWith("/admin");

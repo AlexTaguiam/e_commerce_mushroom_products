@@ -106,6 +106,26 @@ export default function Navbar() {
 
           {/* UTILITY MODULE & AUTH STATES */}
           <div className="hidden md:flex items-center gap-4">
+            {/* Shopping Cart Trigger */}
+            <NavLink
+              to="/cart"
+              className={({ isActive }) => `
+                relative p-4.5 rounded-full transition-all duration-200 group
+                ${
+                  isActive
+                    ? "bg-[#4c6a46]/10 text-[#4c6a46]"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-[#2d4029]"
+                }
+              `}
+            >
+              <ShoppingBag className="w-6 h-6 transition-transform group-hover:scale-105" />
+              {cartCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#4c6a46] text-[10px] font-mono font-bold text-white ring-2 ring-[#faf8f4]">
+                  {cartCount}
+                </span>
+              )}
+            </NavLink>
+
             <div className="h-6 w-px bg-gray-200 mx-1" />
 
             {/* Auth Conditionals */}
@@ -189,26 +209,6 @@ export default function Navbar() {
                 </Link>
               </div>
             )}
-
-            {/* Shopping Cart Trigger */}
-            <NavLink
-              to="/cart"
-              className={({ isActive }) => `
-                relative p-4.5 rounded-full transition-all duration-200 group
-                ${
-                  isActive
-                    ? "bg-[#4c6a46]/10 text-[#4c6a46]"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-[#2d4029]"
-                }
-              `}
-            >
-              <ShoppingBag className="w-6 h-6 transition-transform group-hover:scale-105" />
-              {cartCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#4c6a46] text-[10px] font-mono font-bold text-white ring-2 ring-[#faf8f4]">
-                  {cartCount}
-                </span>
-              )}
-            </NavLink>
           </div>
 
           {/* MOBILE NAVIGATION PORTAL PANEL */}
