@@ -21,7 +21,8 @@
     "express-rate-limit": "^8.6.1",
     "firebase-admin": "^14.1.0",
     "multer": "^2.2.0",
-    "prisma": "^6.19.3"
+    "prisma": "^6.19.3",
+    "resend": "^6.18.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

@@ -10,6 +10,7 @@ import {
   CreditCard,
   ShieldAlert,
   X,
+  PhoneCall,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -32,6 +33,7 @@ export default function Navbar() {
     { name: "Catalog", path: "/", icon: Store },
     { name: "Orders", path: "/orders", icon: History },
     { name: "Checkout", path: "/checkout", icon: CreditCard },
+    { name: "Contact", path: "/contact", icon: PhoneCall },
   ];
 
   // Close profile dropdown when clicking outside

@@ -15,6 +15,7 @@ import InventoryPage from "../pages/admin/InventoryPage";
 import OrderManagerPage from "../pages/admin/OrderManagerPage";
 import AuditLogsPage from "../pages/admin/AuditLogsPage";
 import BatchTrackerPage from "../pages/admin/BatchTrackerPage";
+import ContactPage from "@/pages/customer/ContactPage";
 
 const AdminLayout = () => (
   <div className="flex min-h-screen bg-slate-950 text-slate-100">
@@ -43,6 +44,7 @@ const customerRoutes = (
     <Route path="/checkout" element={<CheckoutPage />} />
     <Route path="/orders" element={<OrderHistoryPage />} />
     <Route path="/products/:productId" element={<ProductDetailPage />} />
+    <Route path="/contact" element={<ContactPage />} />
   </>
 );
 

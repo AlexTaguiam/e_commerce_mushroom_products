@@ -4,8 +4,9 @@ import { AuthProvider } from "./context/AuthProvider";
 import { AppRouter } from "./routes/AppRouter";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import { Toaster } from "sonner";
 import { killAllScrollTriggers } from "./utils/scrollTriggerCleanup";
-const Toaster = () => (
+const Toast = () => (
   <div className="fixed bottom-4 right-4 z-50 pointer-events-none" />
 ); // Toast notification mounting root
 const RateLimitNotice = ({ retryAfter }: { retryAfter: number }) => (
@@ -55,7 +56,16 @@ function AppShell() {
       </div>
 
       {!hideGlobalLayout && <Footer />}
-      <Toaster />
+      <Toast />
+      <Toaster
+        position="bottom-right"
+        richColors
+        toastOptions={{
+          style: {
+            borderRadius: "12px",
+          },
+        }}
+      />
 
       {/* Network rate limit overlay modal guard */}
       {error?.code === "RATE_LIMIT" && (
