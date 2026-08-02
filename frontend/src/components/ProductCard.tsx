@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ShoppingCart, AlertCircle } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cartContext";
-import { toast } from "sonner";
 
-export interface Product {
+interface Product {
   productId: number;
   name: string;
   description: string;
@@ -23,118 +23,93 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const isOutOfStock = product.stockQuantity === 0;
   const { addToCart } = useCart();
 
-  // Format currency directly to Philippine Peso (₱) matching application specifications
-  const formattedPrice = new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(parseFloat(product.price));
+  // Normalize string price for layout safety
+  const numericPrice = parseFloat(product.price.replace(/[^0-9.]/g, "")) || 0;
+  const isOutOfStock = product.stockQuantity === 0;
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // Crucial: Stop navigation click propagation up to the parent wrapping element Link
+    // Prevent the click event from bubbling up to the outer <Link> tag
     e.preventDefault();
     e.stopPropagation();
 
-    if (product.status !== "active") {
-      toast.error("This product is currently unavailable.");
+    if (isOutOfStock) {
+      toast.error(`"${product.name}" is currently out of stock.`);
       return;
     }
 
-    if (product.stockQuantity <= 0) {
-      toast.error(`${product.name} is out of stock.`);
-      return;
-    }
+    addToCart({
+      productId: product.productId,
+      name: product.name,
+      price: product.price,
+      unit: product.unit,
+      imageUrl: product.imageUrl,
 
-    try {
-      addToCart({
-        productId: product.productId,
-        name: product.name,
-        price: product.price,
-        unit: product.unit,
-        imageUrl: product.imageUrl,
-        stockQuantity: product.stockQuantity,
-      });
+      stockQuantity: product.stockQuantity,
+    });
 
-      toast.success(`${product.name} added to cart.`);
-    } catch (error) {
-      console.error("Failed to add product to cart:", error);
-      toast.error("Something went wrong. Please try again.");
-    }
+    toast.success(`Added ${product.name} to your cart.`);
   };
 
   return (
     <Link
       to={`/products/${product.productId}`}
-      className="group relative flex flex-col bg-white border border-gray-200/60 rounded-3xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-[#2d4029]/5 hover:border-gray-300/80"
+      className="group flex flex-col bg-white border border-gray-200/60 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200"
     >
-      {/* CARD TOP ASPECT: IMAGE PORTION CONTAINER */}
-      <div className="relative aspect-square w-full bg-[#f2eee4] overflow-hidden">
+      {/* Product Image Frame */}
+      <div className="relative aspect-square bg-[#faf8f4] overflow-hidden border-b border-gray-100">
         <img
-          src={product.imageUrl}
+          src={
+            product.imageUrl ||
+            "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=400"
+          }
           alt={product.name}
+          className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
           loading="lazy"
-          className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${
-            isOutOfStock ? "contrast-75 brightness-75 grayscale-30" : ""
-          }`}
         />
-
-        {/* Absolute Conditional Stock Badge Overlay */}
-        {isOutOfStock ? (
-          <div className="absolute inset-0 bg-black/20 flex items-center justify-center p-4 backdrop-blur-[2px]">
-            <div className="bg-white/95 px-4 py-2 rounded-full flex items-center gap-1.5 shadow-md border border-red-100">
-              <AlertCircle className="w-4 h-4 text-red-600" />
-              <span className="text-xs font-bold text-red-600 tracking-wide uppercase">
-                Out of Stock
-              </span>
-            </div>
-          </div>
-        ) : (
-          /* Subtle Category Tag Overlay */
-          <div className="absolute top-3 left-3 z-10">
-            <span className="text-[10px] font-bold tracking-wider text-[#4c6a46] bg-white/90 backdrop-blur-sm border border-gray-100 px-2.5 py-1 rounded-full uppercase">
-              {product.category}
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
+            <span className="bg-white text-[#2d4029] font-sans font-bold text-xs uppercase tracking-wider px-3 py-1.5 rounded-xl shadow-sm">
+              Out of Stock
             </span>
           </div>
         )}
       </div>
 
-      {/* CARD BOTTOM ASPECT: DATA CONTENT LAYER */}
-      <div className="flex flex-col flex-1 p-5">
-        <div className="flex-1 mb-4">
-          <h3 className="font-serif font-bold text-lg text-[#2d4029] leading-snug transition-colors group-hover:text-[#4c6a46] mb-1.5 line-clamp-1">
+      {/* Details Area */}
+      <div className="flex flex-col flex-1 p-5 space-y-3">
+        <div className="space-y-1 flex-1">
+          <span className="text-[11px] font-bold tracking-wider text-[#4c6a46] uppercase">
+            {product.category}
+          </span>
+          <h3 className="font-serif font-bold text-lg text-[#2d4029] leading-tight group-hover:text-[#4c6a46] transition-colors line-clamp-1">
             {product.name}
           </h3>
-          <p className="text-xs text-gray-500 font-medium line-clamp-2 leading-relaxed">
+          <p className="text-xs text-gray-400 font-medium line-clamp-2 leading-relaxed">
             {product.description}
           </p>
         </div>
 
-        {/* Price Metrics & Dynamic Checkout Controls Row */}
-        <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-100">
+        {/* Pricing & Cart Trigger Row */}
+        <div className="flex items-center justify-between pt-2">
           <div className="flex flex-col">
-            <span className="font-sans font-bold text-base text-[#2d4029]">
-              {formattedPrice}
+            <span className="font-serif font-bold text-lg text-[#2d4029]">
+              ₱{numericPrice.toLocaleString()}
             </span>
-            <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">
+            <span className="text-[10px] text-gray-400 font-medium">
               per {product.unit}
             </span>
           </div>
 
           <Button
-            disabled={isOutOfStock}
+            type="button"
             onClick={handleAddToCart}
-            className={`h-9 px-4 rounded-full font-semibold text-xs transition-all duration-200 flex items-center gap-1.5 focus:outline-none ${
-              isOutOfStock
-                ? "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
-                : "bg-[#4c6a46] hover:bg-[#3d5538] text-white shadow-sm shadow-[#4c6a46]/10 hover:scale-[1.02]"
-            }`}
+            disabled={isOutOfStock}
+            size="icon"
+            className="w-10 h-10 rounded-xl bg-[#4c6a46] hover:bg-[#3d5538] text-white transition-all shadow-sm disabled:bg-gray-200 disabled:text-gray-400"
           >
-            <ShoppingCart className="w-3.5 h-3.5" />
-            <span>Add</span>
+            <ShoppingCart className="w-4 h-4" />
           </Button>
         </div>
       </div>

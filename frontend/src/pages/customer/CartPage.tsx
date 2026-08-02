@@ -107,14 +107,9 @@ export default function CartPage() {
             {/* DESTRUCTIVE ACTION ROW MODULE */}
             <div className="flex justify-end pt-2">
               <AlertDialog>
-                <AlertDialogTrigger>
-                  <Button
-                    variant="ghost"
-                    className="text-gray-400 hover:text-red-500 hover:bg-red-50 text-xs font-semibold rounded-xl h-9 gap-1.5"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Clear Shopping Cart</span>
-                  </Button>
+                <AlertDialogTrigger className="inline-flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 text-xs font-semibold rounded-xl h-9 px-3 gap-1.5 transition-colors focus-visible:outline-none">
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Clear Shopping Cart</span>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="bg-white rounded-3xl border border-gray-200 max-w-[90vw] sm:max-w-md">
                   <AlertDialogHeader className="space-y-2">

@@ -12,14 +12,11 @@ import {
   PhoneCall,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-const useCartCount = () => {
-  return { count: 3 };
-};
+import { useCart } from "@/context/cartContext";
 
 export default function Navbar() {
   const { user, profile, role, loading, logout } = useAuth();
-  const { count: cartCount } = useCartCount();
+  const { cartCount } = useCart();
   const navigate = useNavigate();
 
   // Pure React states for dropdowns and drawers to eliminate library context crashes
@@ -29,7 +26,7 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const navigationItems = [
-    { name: "Catalog", path: "/", icon: Store },
+    { name: "Catalog", path: "/catalog", icon: Store },
     { name: "Orders", path: "/orders", icon: History },
     { name: "Contact", path: "/contact", icon: PhoneCall },
   ];
