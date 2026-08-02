@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
+import { toast } from "sonner";
 import { CartContext } from "./cartContext";
 import type { CartItem } from "../types/cart";
 
@@ -23,6 +24,9 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
     } catch (error) {
       console.error("Failed to save cart to localStorage:", error);
+      toast.error(
+        "Couldn't save your cart. Your changes may not persist if you reload.",
+      );
     }
   }, [cartItems]);
 

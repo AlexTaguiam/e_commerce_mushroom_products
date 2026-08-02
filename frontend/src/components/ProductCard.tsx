@@ -2,6 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCart, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/context/cartContext";
+import { toast } from "sonner";
 
 export interface Product {
   productId: number;
@@ -22,6 +24,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const isOutOfStock = product.stockQuantity === 0;
+  const { addToCart } = useCart();
 
   // Format currency directly to Philippine Peso (₱) matching application specifications
   const formattedPrice = new Intl.NumberFormat("en-PH", {
@@ -36,10 +39,31 @@ export default function ProductCard({ product }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
 
-    // TODO: Wire up to global cart state context hooks later
-    console.log(
-      `Placeholder Action: Product ${product.productId} ("${product.name}") added to cart request.`,
-    );
+    if (product.status !== "active") {
+      toast.error("This product is currently unavailable.");
+      return;
+    }
+
+    if (product.stockQuantity <= 0) {
+      toast.error(`${product.name} is out of stock.`);
+      return;
+    }
+
+    try {
+      addToCart({
+        productId: product.productId,
+        name: product.name,
+        price: product.price,
+        unit: product.unit,
+        imageUrl: product.imageUrl,
+        stockQuantity: product.stockQuantity,
+      });
+
+      toast.success(`${product.name} added to cart.`);
+    } catch (error) {
+      console.error("Failed to add product to cart:", error);
+      toast.error("Something went wrong. Please try again.");
+    }
   };
 
   return (
