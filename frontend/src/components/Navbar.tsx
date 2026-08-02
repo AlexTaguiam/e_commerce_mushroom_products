@@ -7,7 +7,6 @@ import {
   Store,
   Menu,
   LogOut,
-  CreditCard,
   ShieldAlert,
   X,
   PhoneCall,
@@ -32,7 +31,6 @@ export default function Navbar() {
   const navigationItems = [
     { name: "Catalog", path: "/", icon: Store },
     { name: "Orders", path: "/orders", icon: History },
-    { name: "Checkout", path: "/checkout", icon: CreditCard },
     { name: "Contact", path: "/contact", icon: PhoneCall },
   ];
 

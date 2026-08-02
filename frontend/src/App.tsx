@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { Toaster } from "sonner";
 import { killAllScrollTriggers } from "./utils/scrollTriggerCleanup";
+import { CartProvider } from "./context/CartProvider";
 const Toast = () => (
   <div className="fixed bottom-4 right-4 z-50 pointer-events-none" />
 ); // Toast notification mounting root
@@ -79,7 +80,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppShell />
+        <CartProvider>
+          <AppShell />
+        </CartProvider>
       </AuthProvider>
     </BrowserRouter>
   );

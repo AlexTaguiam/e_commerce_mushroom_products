@@ -4,7 +4,6 @@ import { ProtectedRoute } from "./ProtectedRoute";
 
 import AuthPage from "../pages/auth/AuthPage";
 
-import CatalogPage from "../pages/customer/CatalogPage";
 import CartPage from "../pages/customer/CartPage";
 import CheckoutPage from "../pages/customer/CheckoutPage";
 import ProductDetailPage from "../pages/customer/ProductDetailPage";
@@ -16,6 +15,7 @@ import OrderManagerPage from "../pages/admin/OrderManagerPage";
 import AuditLogsPage from "../pages/admin/AuditLogsPage";
 import BatchTrackerPage from "../pages/admin/BatchTrackerPage";
 import ContactPage from "@/pages/customer/ContactPage";
+import HomePage from "../pages/customer/HomePage";
 
 const AdminLayout = () => (
   <div className="flex min-h-screen bg-slate-950 text-slate-100">
@@ -39,7 +39,7 @@ const publicRoutes = (
 
 const customerRoutes = (
   <>
-    <Route path="/" element={<CatalogPage />} />
+    <Route path="/" element={<HomePage />} />
     <Route path="/cart" element={<CartPage />} />
     <Route path="/checkout" element={<CheckoutPage />} />
     <Route path="/orders" element={<OrderHistoryPage />} />
