@@ -7,6 +7,7 @@ import {
   ShieldAlert,
   CreditCard,
 } from "lucide-react";
+import { toast } from "sonner";
 import { api } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,6 +29,7 @@ interface OrderDetail {
   fulfillmentType: "pickup" | "delivery";
   deliveryAddress: string | null;
   status:
+    | "pending"
     | "confirmed"
     | "ready"
     | "out_for_delivery"
@@ -46,6 +48,7 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchDetailedInvoice = async () => {
@@ -53,7 +56,6 @@ export default function OrderDetailPage() {
       try {
         setLoading(true);
         const response = await api.get(`/orders/${orderId}`);
-        // Directly map backend JSON success payloads
         if (response.data?.success && response.data?.data) {
           setOrder(response.data.data);
         } else {
@@ -75,6 +77,49 @@ export default function OrderDetailPage() {
 
     fetchDetailedInvoice();
   }, [orderId]);
+
+  // Cancellation Handler Logic
+  const handleCancelOrder = async () => {
+    if (!order) return;
+
+    // Safety check: ensure order is still in the unfulfilled initial state
+    if (order.status !== "pending") {
+      toast.error(
+        "This order cannot be cancelled because processing has already begun.",
+      );
+      return;
+    }
+
+    const confirmCancel = window.confirm(
+      "Are you sure you want to cancel this order? This action cannot be undone.",
+    );
+    if (!confirmCancel) return;
+
+    try {
+      setIsCancelling(true);
+
+      // Axios automatically appends the base URL and authorization tokens
+      // Triggers: POST to http://localhost:3000/api/orders/:orderId/cancel
+      const response = await api.patch(`/orders/${order.orderId}/cancel`);
+
+      if (response.data?.success) {
+        toast.success("Your order has been cancelled successfully.");
+
+        // Instantly switch local state status to 'cancelled' so UI dynamically reflects it
+        setOrder((prev) => (prev ? { ...prev, status: "cancelled" } : null));
+      } else {
+        toast.error(response.data?.message || "Failed to cancel the order.");
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.message ||
+          "An error occurred while attempting to cancel the order.",
+      );
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   if (loading) {
     return <DetailSkeleton />;
@@ -119,7 +164,7 @@ export default function OrderDetailPage() {
   return (
     <div className="w-full min-h-screen bg-[#faf8f4] font-sans antialiased py-10 sm:py-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        {/* Navigation Core Heading Backlinks */}
+        {/* Navigation Backlink */}
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -142,15 +187,32 @@ export default function OrderDetailPage() {
                 Logged execution time: {formattedDate}
               </span>
             </div>
-            <span
-              className={`text-xs font-bold uppercase tracking-wider border rounded-xl px-3 py-1 ${
-                order.fulfillmentType === "delivery"
-                  ? "bg-blue-50 text-blue-700 border-blue-100"
-                  : "bg-purple-50 text-purple-700 border-purple-100"
-              }`}
-            >
-              Fulfillment Method: {order.fulfillmentType}
-            </span>
+
+            <div className="flex items-center gap-3">
+              {/* Conditional Cancel Button (Only shows if status is strictly 'confirmed') */}
+              {order.status === "pending" && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  disabled={isCancelling}
+                  onClick={handleCancelOrder}
+                  className="rounded-xl text-xs font-bold uppercase tracking-wider px-4 h-9 shadow-sm bg-red-600 hover:bg-red-700 text-white transition-all"
+                >
+                  {isCancelling ? "Cancelling..." : "Cancel Order"}
+                </Button>
+              )}
+
+              <span
+                className={`text-xs font-bold uppercase tracking-wider border rounded-xl px-3 py-1 ${
+                  order.fulfillmentType === "delivery"
+                    ? "bg-blue-50 text-blue-700 border-blue-100"
+                    : "bg-purple-50 text-purple-700 border-purple-100"
+                }`}
+              >
+                Fulfillment Method: {order.fulfillmentType}
+              </span>
+            </div>
           </div>
 
           {/* Expanded Step Pipeline Engine Container */}
@@ -165,7 +227,7 @@ export default function OrderDetailPage() {
 
         {/* INTERFACE ROW LAYOUT BLOCK DETAILS */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-          {/* LEFT SUBPANEL: ITEM LINE MATRIX RECORDS (7 Columns) */}
+          {/* LEFT SUBPANEL: ITEM LINE MATRIX RECORDS */}
           <div className="md:col-span-7 bg-white border border-gray-200/60 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
             <h3 className="text-sm font-bold uppercase tracking-wide text-[#2d4029] flex items-center gap-2 border-b border-gray-50 pb-2">
               <Receipt className="w-4 h-4 text-[#4c6a46]" />
@@ -214,7 +276,7 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
-          {/* RIGHT SUBPANEL: CLEARANCE SUMMARIES AND DESTINATIONS (5 Columns) */}
+          {/* RIGHT SUBPANEL: CLEARANCE SUMMARIES AND DESTINATIONS */}
           <div className="md:col-span-5 space-y-6">
             {/* Conditional Delivery Address Card */}
             {order.fulfillmentType === "delivery" && (
@@ -270,7 +332,6 @@ export default function OrderDetailPage() {
   );
 }
 
-// Internal File Interface Component Skeleton
 function DetailSkeleton() {
   return (
     <div className="w-full min-h-screen bg-[#faf8f4] py-16">

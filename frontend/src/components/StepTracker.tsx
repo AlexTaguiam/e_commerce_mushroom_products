@@ -4,11 +4,13 @@ import {
   Truck,
   PackageCheck,
   FileText,
+  RotateCwFadingClock,
   ShoppingBag,
 } from "lucide-react";
 
 type FulfillmentType = "pickup" | "delivery";
 type OrderStatus =
+  | "pending"
   | "confirmed"
   | "ready"
   | "out_for_delivery"
@@ -53,6 +55,7 @@ export default function StepTracker({
 
   // 2. Map structural steps dynamically based on fulfillment type configuration
   const deliverySteps: StepConfig[] = [
+    { key: "pending", label: "Pending", icon: RotateCwFadingClock },
     { key: "confirmed", label: "Confirmed", icon: FileText },
     { key: "ready", label: "Ready to Ship", icon: ShoppingBag },
     { key: "out_for_delivery", label: "Out for Delivery", icon: Truck },
@@ -60,6 +63,7 @@ export default function StepTracker({
   ];
 
   const pickupSteps: StepConfig[] = [
+    { key: "pending", label: "Pending", icon: RotateCwFadingClock },
     { key: "confirmed", label: "Confirmed", icon: FileText },
     { key: "ready", label: "Ready for Pickup", icon: ShoppingBag },
     { key: "completed", label: "Completed", icon: PackageCheck },
