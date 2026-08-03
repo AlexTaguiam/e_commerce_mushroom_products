@@ -7,7 +7,7 @@ import AuthPage from "../pages/auth/AuthPage";
 import CartPage from "../pages/customer/CartPage";
 import CheckoutPage from "../pages/customer/CheckoutPage";
 import ProductDetailPage from "../pages/customer/ProductDetailPage";
-import OrderHistoryPage from "../pages/customer/OrderHistoryPage";
+import OrdersPage from "../pages/customer/OrdersPage";
 
 import DashboardPage from "../pages/admin/DashboardPage";
 import InventoryPage from "../pages/admin/InventoryPage";
@@ -17,6 +17,7 @@ import BatchTrackerPage from "../pages/admin/BatchTrackerPage";
 import ContactPage from "@/pages/customer/ContactPage";
 import HomePage from "../pages/customer/HomePage";
 import CatalogPage from "@/pages/customer/CatalogPage";
+import OrderDetailPage from "@/pages/customer/OrderDetailPage";
 
 const AdminLayout = () => (
   <div className="flex min-h-screen bg-slate-950 text-slate-100">
@@ -44,7 +45,8 @@ const customerRoutes = (
     <Route path="/catalog" element={<CatalogPage />} />
     <Route path="/cart" element={<CartPage />} />
     <Route path="/checkout" element={<CheckoutPage />} />
-    <Route path="/orders" element={<OrderHistoryPage />} />
+    <Route path="/orders" element={<OrdersPage />} />
+    <Route path="/orders/:orderId" element={<OrderDetailPage />} />
     <Route path="/products/:productId" element={<ProductDetailPage />} />
     <Route path="/contact" element={<ContactPage />} />
   </>

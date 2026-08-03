@@ -36,7 +36,11 @@ export const createOrder = async (
 
     // Checks the item if its not empty
     if (!items || items.length === 0) {
-      sendResponse(res, 400, "Bad Request: Your checkout cart cannot be empty.");
+      sendResponse(
+        res,
+        400,
+        "Bad Request: Your checkout cart cannot be empty.",
+      );
       return;
     }
 
@@ -130,7 +134,12 @@ export const createOrder = async (
       "Critical Transaction Checkout Failure: ",
       error.message || error,
     );
-    sendResponse(res, 400, error.message || "An unhandled exception occurred during transaction verification.");
+    sendResponse(
+      res,
+      400,
+      error.message ||
+        "An unhandled exception occurred during transaction verification.",
+    );
   }
 };
 
@@ -139,6 +148,7 @@ export const createOrder = async (
 // });
 
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
+  console.log("Get orders", req.user);
   try {
     if (!req.user || !req.user.uid) {
       sendResponse(res, 401, "Unauthorized: Missing authentication token.");
@@ -189,10 +199,17 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
       },
     });
 
-    sendResponse(res, 200, "Orders retrieved successfully", { count: orders.length, orders });
+    sendResponse(res, 200, "Orders retrieved successfully", {
+      count: orders.length,
+      orders,
+    });
   } catch (error: any) {
     console.error("Unable to get orders ", error.message || error);
-    sendResponse(res, 400, error.message || "An unhandled exception occurred in getting orders.");
+    sendResponse(
+      res,
+      400,
+      error.message || "An unhandled exception occurred in getting orders.",
+    );
   }
 };
 
@@ -213,7 +230,11 @@ export const getOrderById = async (
     console.log("Order ID:", orderId);
 
     if (isNaN(orderId)) {
-      sendResponse(res, 400, "Bad Request: Invalid format for target order ID identifier.");
+      sendResponse(
+        res,
+        400,
+        "Bad Request: Invalid format for target order ID identifier.",
+      );
       return;
     }
 
@@ -248,7 +269,11 @@ export const getOrderById = async (
     });
 
     if (!order) {
-      sendResponse(res, 404, "Not Found: The requested order record could not be resolved or access is restricted.");
+      sendResponse(
+        res,
+        404,
+        "Not Found: The requested order record could not be resolved or access is restricted.",
+      );
       return; // 👈 FIXED: Safely exits execution context
     }
 
@@ -258,7 +283,12 @@ export const getOrderById = async (
       "Unable to capture order profile logs:",
       error.message || error,
     );
-    sendResponse(res, 400, error.message || "An unhandled engine exception occurred while handling retrieval commands.");
+    sendResponse(
+      res,
+      400,
+      error.message ||
+        "An unhandled engine exception occurred while handling retrieval commands.",
+    );
   }
 };
 
@@ -281,7 +311,11 @@ export const confirmOrder = async (
 
     // Enforce role-based access control
     if (role !== "admin") {
-      sendResponse(res, 403, "Unauthorized: Only administrators can confirm orders.");
+      sendResponse(
+        res,
+        403,
+        "Unauthorized: Only administrators can confirm orders.",
+      );
       return;
     }
 
@@ -298,7 +332,11 @@ export const confirmOrder = async (
     }
 
     if (targetOrder.status !== "pending") {
-      sendResponse(res, 400, `Bad Request: Cannot confirm this order. Current status is already '${targetOrder.status}'.`);
+      sendResponse(
+        res,
+        400,
+        `Bad Request: Cannot confirm this order. Current status is already '${targetOrder.status}'.`,
+      );
       return;
     }
 
@@ -355,24 +393,41 @@ export const confirmOrder = async (
     });
 
     // 6. Return Success Payload
-    sendResponse(res, 200, `Order #${orderId} confirmed successfully. Inventory stock levels updated.`);
+    sendResponse(
+      res,
+      200,
+      `Order #${orderId} confirmed successfully. Inventory stock levels updated.`,
+    );
   } catch (error: any) {
     console.error("Unable to Confirm Order:", error.message || error);
 
     // Custom Error Router: Check if the transaction failed due to our explicit stock checks
     if (error.message.startsWith("INSUFFICIENT_STOCK:")) {
       const productName = error.message.split(":")[1];
-      sendResponse(res, 400, `Insufficient stock on hand for product: ${productName}. Transaction rolled back safely.`);
+      sendResponse(
+        res,
+        400,
+        `Insufficient stock on hand for product: ${productName}. Transaction rolled back safely.`,
+      );
       return;
     }
 
     if (error.message.startsWith("PRODUCT_NOT_FOUND:")) {
-      sendResponse(res, 404, "One or more items in the order point to a product that no longer exists.");
+      sendResponse(
+        res,
+        404,
+        "One or more items in the order point to a product that no longer exists.",
+      );
       return;
     }
 
     // Standard Fallback catch-all for database drops or driver dropouts
-    sendResponse(res, 500, error.message || "An unhandled execution exception occurred inside the transaction database engine.");
+    sendResponse(
+      res,
+      500,
+      error.message ||
+        "An unhandled execution exception occurred inside the transaction database engine.",
+    );
   }
 };
 
@@ -393,7 +448,11 @@ export const updateOrderStatus = async (
 
     // 2. Enforce role-based access control
     if (role !== "admin") {
-      sendResponse(res, 403, "Unauthorized: Only administrators can update order status.");
+      sendResponse(
+        res,
+        403,
+        "Unauthorized: Only administrators can update order status.",
+      );
       return;
     }
 
@@ -444,7 +503,11 @@ export const updateOrderStatus = async (
 
       case "completed":
         // Once completed, it's locked down forever
-        sendResponse(res, 400, "Cannot modify an order that is already completed.");
+        sendResponse(
+          res,
+          400,
+          "Cannot modify an order that is already completed.",
+        );
         return;
 
       default:
@@ -454,7 +517,11 @@ export const updateOrderStatus = async (
 
     // If the requested status skipped a track step, reject it
     if (!isValidTransition) {
-      sendResponse(res, 400, `Invalid status track. Cannot move a ${fulfillmentType} order from '${currentStatus}' straight to '${targetStatus}'.`);
+      sendResponse(
+        res,
+        400,
+        `Invalid status track. Cannot move a ${fulfillmentType} order from '${currentStatus}' straight to '${targetStatus}'.`,
+      );
       return;
     }
 
@@ -472,10 +539,19 @@ export const updateOrderStatus = async (
       data: updateData,
     });
 
-    sendResponse(res, 200, `Order status successfully updated to ${targetStatus}.`, updatedOrder);
+    sendResponse(
+      res,
+      200,
+      `Order status successfully updated to ${targetStatus}.`,
+      updatedOrder,
+    );
   } catch (error: any) {
     console.error("Unable to update order status:", error.message || error);
-    sendResponse(res, 500, error.message || "An error occurred on the database engine level.");
+    sendResponse(
+      res,
+      500,
+      error.message || "An error occurred on the database engine level.",
+    );
   }
 };
 
@@ -541,9 +617,18 @@ export const cancelOrder = async (
       },
     });
 
-    sendResponse(res, 200, "Order Successfully cancelled.", completedCancellation);
+    sendResponse(
+      res,
+      200,
+      "Order Successfully cancelled.",
+      completedCancellation,
+    );
   } catch (error: any) {
     console.error("Unable to cancel order:", error.message || error);
-    sendResponse(res, 500, error.message || "An error occurred on the database engine level.");
+    sendResponse(
+      res,
+      500,
+      error.message || "An error occurred on the database engine level.",
+    );
   }
 };
