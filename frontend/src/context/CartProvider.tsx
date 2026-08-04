@@ -1,34 +1,54 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
 import { CartContext } from "./cartContext";
 import type { CartItem } from "../types/cart";
+import { useAuth } from "./authContext";
 
-const CART_STORAGE_KEY = "alhona_cart";
+const GUEST_CART_KEY = "cart_guest";
+
+function loadCart(key: string): CartItem[] {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error("Failed to parse cart from localStorage:", error);
+    return [];
+  }
+}
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    try {
-      const stored = localStorage.getItem(CART_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch (error) {
-      console.error("Failed to parse cart from localStorage:", error);
-      return [];
-    }
-  });
+  const { user, loading: authLoading } = useAuth();
+  const cartKey = user?.uid ? `cart_${user.uid}` : GUEST_CART_KEY;
 
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const loadedKeyRef = useRef<string | null>(null);
+
+  // Load cart whenever the active key changes (login/logout/switch account)
   useEffect(() => {
+    if (authLoading) return;
+    if (loadedKeyRef.current === cartKey) return; // already loaded for this identity
+
+    loadedKeyRef.current = cartKey;
+    setCartItems(loadCart(cartKey));
+  }, [cartKey, authLoading]);
+
+  // Persist to the correct key whenever cart changes
+  useEffect(() => {
+    if (authLoading) return;
+    if (loadedKeyRef.current !== cartKey) return; // don't save before the initial load for this key completes
+
     try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
+      localStorage.setItem(cartKey, JSON.stringify(cartItems));
     } catch (error) {
       console.error("Failed to save cart to localStorage:", error);
       toast.error(
         "Couldn't save your cart. Your changes may not persist if you reload.",
       );
     }
-  }, [cartItems]);
+  }, [cartItems, cartKey, authLoading]);
 
   const addToCart = (item: Omit<CartItem, "quantity">, quantity = 1) => {
     setCartItems((prev) => {
