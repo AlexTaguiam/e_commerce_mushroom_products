@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 import AuthPage from "../pages/auth/AuthPage";
@@ -19,18 +19,7 @@ import HomePage from "../pages/customer/HomePage";
 import CatalogPage from "@/pages/customer/CatalogPage";
 import OrderDetailPage from "@/pages/customer/OrderDetailPage";
 
-const AdminLayout = () => (
-  <div className="flex min-h-screen bg-slate-950 text-slate-100">
-    <aside className="w-64 border-r border-slate-900 bg-slate-900/40 p-6">
-      <h2 className="text-lg font-bold text-slate-200 tracking-tight">
-        Control Panel
-      </h2>
-    </aside>
-    <main className="flex-1 p-8">
-      <Outlet />
-    </main>
-  </div>
-);
+import AdminLayout from "@/components/admin/AdminLayout";
 
 const publicRoutes = (
   <>
