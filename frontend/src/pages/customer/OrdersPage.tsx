@@ -12,6 +12,7 @@ interface Order {
   fulfillmentType: "pickup" | "delivery";
   deliveryAddress: string | null;
   status:
+    | "pending"
     | "confirmed"
     | "ready"
     | "out_for_delivery"
@@ -61,6 +62,8 @@ export default function OrdersPage() {
   // Filter conditions mapping logic (Executed client-side)
   const filterOrdersByStatus = (tab: string) => {
     switch (tab) {
+      case "pending":
+        return orders.filter((o) => o.status === "pending");
       case "confirm":
         return orders.filter((o) => o.status === "confirmed");
       case "ship":
@@ -110,6 +113,12 @@ export default function OrdersPage() {
               All Purchases
             </TabsTrigger>
             <TabsTrigger
+              value="pending"
+              className="data-[state=active]:bg-[#2d4029] data-[state=active]:text-white rounded-lg text-xs font-bold px-4 py-2 uppercase tracking-wide"
+            >
+              Pending
+            </TabsTrigger>
+            <TabsTrigger
               value="confirm"
               className="data-[state=active]:bg-[#2d4029] data-[state=active]:text-white rounded-lg text-xs font-bold px-4 py-2 uppercase tracking-wide"
             >
@@ -136,7 +145,7 @@ export default function OrdersPage() {
           </TabsList>
 
           {/* Render target loops blocks */}
-          {["all", "confirm", "ship", "completed", "cancelled"].map(
+          {["all", "pending", "confirm", "ship", "completed", "cancelled"].map(
             (tabKey) => {
               const displayList = filterOrdersByStatus(tabKey);
 

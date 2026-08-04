@@ -18,6 +18,7 @@ interface Order {
   fulfillmentType: "pickup" | "delivery";
   deliveryAddress: string | null;
   status:
+    | "pending"
     | "confirmed"
     | "ready"
     | "out_for_delivery"
