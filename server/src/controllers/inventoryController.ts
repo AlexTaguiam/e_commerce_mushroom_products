@@ -29,8 +29,21 @@ export const getInventoryLogs = async (
       whereClause.productId = Number(productId);
     }
 
+    // UPDATED HERE: Added `include` and `orderBy`
     const logHistory = await prisma.inventoryLog.findMany({
       where: whereClause,
+      include: {
+        product: {
+          select: {
+            name: true,
+            unit: true,
+            category: true,
+          },
+        },
+      },
+      orderBy: {
+        loggedAt: "desc", // Newest logs first
+      },
     });
 
     sendResponse(res, 200, "Logs retrieved successfully.", logHistory);
@@ -71,7 +84,11 @@ export const restockProduct = async (
       isNaN(Number(quantity)) ||
       Number(quantity) <= 0
     ) {
-      sendResponse(res, 400, "A valid productId and a positive restock quantity are required.");
+      sendResponse(
+        res,
+        400,
+        "A valid productId and a positive restock quantity are required.",
+      );
       return;
     }
 
@@ -110,7 +127,12 @@ export const restockProduct = async (
     sendResponse(res, 200, "Product restocked successfully.", updatedProduct);
   } catch (error: any) {
     console.error("Error in restockProduct:", error.message || error);
-    sendResponse(res, 500, error.message || "An unexpected error occurred during the restock operation.");
+    sendResponse(
+      res,
+      500,
+      error.message ||
+        "An unexpected error occurred during the restock operation.",
+    );
   }
 };
 
@@ -146,7 +168,11 @@ export const adjustInventory = async (
       isNaN(Number(adjustment)) ||
       Number(adjustment) === 0
     ) {
-      sendResponse(res, 404, "A valid productId and a non-zero adjustment value are required.");
+      sendResponse(
+        res,
+        404,
+        "A valid productId and a non-zero adjustment value are required.",
+      );
       return;
     }
 
@@ -164,7 +190,11 @@ export const adjustInventory = async (
     const changeValue = Number(adjustment);
 
     if (currentStock + changeValue < 0) {
-      sendResponse(res, 400, `Invalid adjustment. Current stock is ${currentStock}, cannot reduce by ${Math.abs(changeValue)}.`);
+      sendResponse(
+        res,
+        400,
+        `Invalid adjustment. Current stock is ${currentStock}, cannot reduce by ${Math.abs(changeValue)}.`,
+      );
       return;
     }
 
