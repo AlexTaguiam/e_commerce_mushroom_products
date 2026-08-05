@@ -20,7 +20,7 @@ export const api: AxiosInstance = axios.create({
 // NOTE: Only use adminApi if your Express backend mounts admin routers under a literal "/api/admin" path.
 // If your backend routes look like "/api/inventory/logs", use the standard "api" client instead!
 export const adminApi: AxiosInstance = axios.create({
-  baseURL: `${BASE_URL}`,
+  baseURL: BASE_URL,
   timeout: 10000,
   headers: { "Content-Type": "application/json" },
 });

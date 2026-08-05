@@ -8,6 +8,7 @@ import {
   LogOut,
   ShieldCheck,
   Sprout,
+  PackageSearch,
 } from "lucide-react";
 import { useAuth } from "@/context/authContext";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,9 @@ interface AdminSidebarProps {
 // Kept unexported to maintain Fast Refresh HMR compatibility
 const ADMIN_NAV_ITEMS = [
   { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
+  { label: "Products", path: "/admin/products", icon: PackageSearch },
   { label: "Inventory", path: "/admin/inventory", icon: Package },
+
   { label: "Orders", path: "/admin/orders", icon: ClipboardList },
   { label: "Audit Logs", path: "/admin/audit-logs", icon: ScrollText },
   { label: "Batches", path: "/admin/batches", icon: Layers },

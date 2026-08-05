@@ -20,6 +20,7 @@ import CatalogPage from "@/pages/customer/CatalogPage";
 import OrderDetailPage from "@/pages/customer/OrderDetailPage";
 
 import AdminLayout from "@/components/admin/AdminLayout";
+import ProductsPage from "@/pages/admin/ProductsPage";
 
 const publicRoutes = (
   <>
@@ -45,6 +46,7 @@ const adminRoutes = (
   <Route element={<AdminLayout />}>
     <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
     <Route path="/admin/dashboard" element={<DashboardPage />} />
+    <Route path="/admin/products" element={<ProductsPage />} />
     <Route path="/admin/inventory" element={<InventoryPage />} />
     <Route path="/admin/orders" element={<OrderManagerPage />} />
     <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
