@@ -115,12 +115,26 @@ function ProductFormContent({
     setLoading(true);
 
     const formData = new FormData();
-    formData.append("name", name);
-    formData.append("description", description);
+
+    formData.append("name", name.trim());
     formData.append("category", category);
-    formData.append("price", price);
-    formData.append("unit", unit);
-    formData.append("stockQuantity", stockQuantity);
+    formData.append("unit", unit.trim());
+
+    const parsedPrice = parseFloat(price);
+    formData.append("price", isNaN(parsedPrice) ? "0" : parsedPrice.toString());
+
+    // Only pass stockQuantity for NEW products
+    if (!isEdit) {
+      const parsedStock = parseInt(stockQuantity, 10);
+      formData.append(
+        "stockQuantity",
+        isNaN(parsedStock) ? "0" : parsedStock.toString(),
+      );
+    }
+
+    if (description.trim()) {
+      formData.append("description", description.trim());
+    }
 
     if (imageFile) {
       formData.append("image", imageFile);
@@ -237,7 +251,7 @@ function ProductFormContent({
         </div>
       </div>
 
-      {/* Price & Initial Stock Row */}
+      {/* Price & Stock Row */}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-xs font-bold text-stone-600 block mb-1 uppercase tracking-wide">
@@ -256,14 +270,34 @@ function ProductFormContent({
 
         <div>
           <label className="text-xs font-bold text-stone-600 block mb-1 uppercase tracking-wide">
-            {isEdit ? "Current Stock" : "Initial Stock Quantity"}
+            {isEdit ? "Current Stock" : "Initial Stock Quantity *"}
           </label>
-          <Input
-            type="number"
-            value={stockQuantity}
-            onChange={(e) => setStockQuantity(e.target.value)}
-            className="border-[#e5dfd3] focus:border-[#4c6a46] rounded-xl text-xs h-10"
-          />
+
+          {isEdit ? (
+            <div className="relative">
+              <Input
+                disabled
+                value={stockQuantity}
+                className="border-[#e5dfd3] bg-[#faf8f4] text-stone-500 rounded-xl text-xs h-10 font-bold cursor-not-allowed"
+              />
+              <span className="text-[10px] text-stone-400 mt-1 block">
+                Adjust stock via{" "}
+                <span className="font-semibold text-[#4c6a46]">
+                  Inventory Page
+                </span>
+              </span>
+            </div>
+          ) : (
+            <Input
+              type="number"
+              min="0"
+              required
+              placeholder="0"
+              value={stockQuantity}
+              onChange={(e) => setStockQuantity(e.target.value)}
+              className="border-[#e5dfd3] focus:border-[#4c6a46] rounded-xl text-xs h-10"
+            />
+          )}
         </div>
       </div>
 
