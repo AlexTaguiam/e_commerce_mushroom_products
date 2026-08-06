@@ -8,6 +8,7 @@ import inventoryRoutes from "./routes/inventoryRoutes";
 import paymongoWebhookRouter from "./webhooks/paymongoWebhook";
 import contactRoutes from "./routes/contactRoutes";
 import paymentRoutes from "./routes/paymentsRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes";
 import { globalLimiter } from "./middleware/rateLimiter";
 
 dotenv.config();
@@ -31,6 +32,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api", contactRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 

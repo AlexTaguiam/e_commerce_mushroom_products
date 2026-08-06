@@ -13,7 +13,7 @@ import DashboardPage from "../pages/admin/DashboardPage";
 import InventoryPage from "../pages/admin/InventoryPage";
 import OrderManagerPage from "../pages/admin/OrderManagerPage";
 import AuditLogsPage from "../pages/admin/AuditLogsPage";
-import BatchTrackerPage from "../pages/admin/BatchTrackerPage";
+
 import ContactPage from "@/pages/customer/ContactPage";
 import HomePage from "../pages/customer/HomePage";
 import CatalogPage from "@/pages/customer/CatalogPage";
@@ -50,7 +50,6 @@ const adminRoutes = (
     <Route path="/admin/inventory" element={<InventoryPage />} />
     <Route path="/admin/orders" element={<OrderManagerPage />} />
     <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
-    <Route path="/admin/batches" element={<BatchTrackerPage />} />
   </Route>
 );
 

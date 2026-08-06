@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   Package,
   ClipboardList,
-  Layers,
   LogOut,
   ShieldCheck,
   Sprout,
@@ -24,7 +23,6 @@ const ADMIN_NAV_ITEMS = [
   { label: "Products", path: "/admin/products", icon: PackageSearch },
   { label: "Inventory Log", path: "/admin/inventory", icon: Package },
   { label: "Orders", path: "/admin/orders", icon: ClipboardList },
-  { label: "Batches", path: "/admin/batches", icon: Layers },
 ];
 
 export function AdminSidebar({ onNavItemClick }: AdminSidebarProps) {
