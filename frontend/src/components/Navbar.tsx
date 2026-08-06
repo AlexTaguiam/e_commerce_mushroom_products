@@ -10,6 +10,7 @@ import {
   ShieldAlert,
   X,
   PhoneCall,
+  LayoutDashboard,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCart } from "@/context/cartContext";
@@ -163,6 +164,21 @@ export default function Navbar() {
                     </div>
 
                     <div className="h-px bg-gray-100 my-1.5" />
+
+                    {role === "admin" ? (
+                      <button
+                        onClick={() => {
+                          setIsProfileOpen(false);
+                          navigate("/admin/dashboard");
+                        }}
+                        className="w-full text-left rounded-xl hover:bg-gray-50 text-gray-700 font-medium px-3 py-2 flex items-center gap-2.5 transition-colors"
+                      >
+                        <LayoutDashboard className="w-4 h-4 text-gray-400" />
+                        Dashboard
+                      </button>
+                    ) : (
+                      ""
+                    )}
 
                     <button
                       onClick={() => {

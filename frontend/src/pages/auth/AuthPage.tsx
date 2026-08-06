@@ -249,6 +249,7 @@ function LoginForm({ onSwitch }: LoginFormProps) {
         </div>
 
         <Button
+          type="submit"
           disabled={isLoading}
           className="w-full h-12 rounded-full text-base font-semibold tracking-wide shadow-md shadow-[#4c6a46]/10 transition-transform active:scale-[0.99]"
         >
@@ -541,6 +542,7 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
         </div>
 
         <Button
+          type="submit"
           disabled={isLoading}
           className="w-full h-12 rounded-full text-base font-semibold tracking-wide shadow-md shadow-[#4c6a46]/10 transition-all active:scale-[0.99] mt-1"
         >

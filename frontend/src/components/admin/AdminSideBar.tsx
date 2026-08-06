@@ -1,14 +1,15 @@
 import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Package,
   ClipboardList,
-  ScrollText,
   Layers,
   LogOut,
   ShieldCheck,
   Sprout,
   PackageSearch,
+  SendToBack,
 } from "lucide-react";
 import { useAuth } from "@/context/authContext";
 import { Button } from "@/components/ui/button";
@@ -21,15 +22,18 @@ interface AdminSidebarProps {
 const ADMIN_NAV_ITEMS = [
   { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Products", path: "/admin/products", icon: PackageSearch },
-  { label: "Inventory", path: "/admin/inventory", icon: Package },
-
+  { label: "Inventory Log", path: "/admin/inventory", icon: Package },
   { label: "Orders", path: "/admin/orders", icon: ClipboardList },
-  { label: "Audit Logs", path: "/admin/audit-logs", icon: ScrollText },
   { label: "Batches", path: "/admin/batches", icon: Layers },
 ];
 
 export function AdminSidebar({ onNavItemClick }: AdminSidebarProps) {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
+
+  const ToCustomer = () => {
+    navigate("/");
+  };
 
   return (
     <div className="flex flex-col h-full bg-white border-r border-[#e5dfd3] text-[#2d4029]">
@@ -105,6 +109,16 @@ export function AdminSidebar({ onNavItemClick }: AdminSidebarProps) {
               </span>
             </div>
           </div>
+
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={ToCustomer}
+            className="w-full h-8 justify-start gap-2.5 text-xs text-stone-500 hover:text-red-600 hover:bg-red-50 rounded-xl px-2.5 transition-colors font-semibold"
+          >
+            <SendToBack className="w-3.5 h-3.5" />
+            <span>Customer</span>
+          </Button>
 
           <Button
             type="button"

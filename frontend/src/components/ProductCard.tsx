@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cartContext";
 
-interface Product {
+export interface Product {
   productId: number;
   name: string;
   description: string;
