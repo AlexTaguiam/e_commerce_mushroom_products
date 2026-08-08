@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import helmet from "helmet";
+
 import productRoutes from "./routes/productRoutes";
 import authRoutes from "./routes/authRoutes";
 import orderRoutes from "./routes/orderRoutes";
@@ -16,14 +18,36 @@ dotenv.config();
 const app = express();
 
 app.use(
-  cors({
-    origin: "http://localhost:5173", // 👈 swap this with your frontend URL
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // allowed HTTP methods
-    credentials: true, // if you need cookies or auth headers
+  helmet({
+    // Optional tweak: If your Express server serves static uploads or images
+    // to a separate React domain, allow cross-origin resource sharing for assets
+    crossOriginResourcePolicy: { policy: "cross-origin" },
   }),
 );
+
+const FRONTEND_URL = process.env.CLIENT_URL || "http://localhost:5173";
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (Postman, cURL, server-side jobs)
+      // or requests coming from your frontend application
+      if (!origin || origin === FRONTEND_URL) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked for origin: ${origin}`));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+    optionsSuccessStatus: 200,
+  }),
+);
+
 app.use("/webhooks", paymongoWebhookRouter);
 app.use(express.json());
+app.set("trust proxy", 1);
 app.use(globalLimiter); // Apply global rate limiter to all routes
 
 app.use("/api/products", productRoutes);

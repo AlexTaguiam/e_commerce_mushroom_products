@@ -3,6 +3,7 @@ import prisma from "../config/db";
 import cloudinary from "../config/cloudinary";
 import { PRODUCT_CATEGORY, PRODUCT_STATUS } from "../constants/enums";
 import { sendResponse } from "../utils/reponseHandler";
+import { CreateProductInput } from "../schema/productSchema";
 
 // --- GET FEATURED PRODUCTS ---
 export async function getFeaturedProducts(
@@ -83,6 +84,8 @@ export async function createProduct(
   res: Response,
 ): Promise<Response | void> {
   try {
+    // req.body is pre-validated by Zod before reaching this line
+    const body: CreateProductInput = req.body;
     const { name, description, category, price, unit, stockQuantity } =
       req.body;
 

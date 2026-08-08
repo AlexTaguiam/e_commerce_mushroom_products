@@ -1,5 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { auth } from "../config/firebase";
+import { DecodedIdToken } from "firebase-admin/auth";
+
+// Extend the official DecodedIdToken type
+export interface AuthenticatedRequest extends Request {
+  user?: DecodedIdToken & {
+    role: string;
+  };
+}
 
 export async function verifyFirebaseToken(
   req: Request,
@@ -7,22 +15,46 @@ export async function verifyFirebaseToken(
   next: NextFunction,
 ) {
   const authHeader = req.headers.authorization;
-  const token = authHeader?.split("Bearer ")[1];
 
-  console.log("Token: ", token);
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      success: false,
+      message: "Access denied. No authorization token provided.",
+    });
+  }
+
+  const token = authHeader.split("Bearer ")[1]?.trim();
 
   if (!token) {
-    return res.status(401).json({ error: "No token provided" });
+    return res.status(401).json({
+      success: false,
+      message: "Access denied. Malformed token format.",
+    });
   }
 
   try {
-    const decodedToken = await auth.verifyIdToken(token);
-    req.user = {
+    // Second argument `true` enforces checking token revocation status
+    const decodedToken = await auth.verifyIdToken(token, true);
+
+    (req as AuthenticatedRequest).user = {
       ...decodedToken,
       role: (decodedToken.role as string) || "customer",
     };
-    next();
-  } catch (err) {
-    return res.status(401).json({ error: "Invalid or expired token" });
+
+    return next();
+  } catch (err: any) {
+    console.error("Auth verification error:", err.code || err.message);
+
+    if (err.code === "auth/id-token-revoked") {
+      return res.status(401).json({
+        success: false,
+        message: "Token has been revoked. Please log in again.",
+      });
+    }
+
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired authorization token.",
+    });
   }
 }
