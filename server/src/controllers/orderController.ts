@@ -2,11 +2,7 @@ import { Request, Response } from "express";
 import prisma from "../config/db";
 import { sendResponse } from "../utils/reponseHandler";
 
-// 1. Explicitly type the structure of incoming items for compile safety
-interface OrderItemInput {
-  productId: number;
-  quantity: number;
-}
+
 
 export const createOrder = async (
   req: Request,
@@ -19,30 +15,13 @@ export const createOrder = async (
       return;
     }
 
-    // Gets the data coming from the frontend and defining its datatypes
+    // Gets the data coming from the frontend (pre-validated and typed by Zod)
     const {
       items,
       deliveryAddress,
-      contactPhone,
       paymentMethod,
       fulfillmentType,
-    } = req.body as {
-      items: OrderItemInput[];
-      deliveryAddress: string;
-      contactPhone: string;
-      paymentMethod: string;
-      fulfillmentType: string;
-    };
-
-    // Checks the item if its not empty
-    if (!items || items.length === 0) {
-      sendResponse(
-        res,
-        400,
-        "Bad Request: Your checkout cart cannot be empty.",
-      );
-      return;
-    }
+    } = req.body;
 
     // Look up the database for the uid
     const databaseUser = await prisma.user.findUnique({

@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import prisma from "../config/db";
 import cloudinary from "../config/cloudinary";
-import { PRODUCT_CATEGORY, PRODUCT_STATUS } from "../constants/enums";
+import { PRODUCT_STATUS } from "../constants/enums";
 import { sendResponse } from "../utils/reponseHandler";
-import { CreateProductInput } from "../schema/productSchema";
+
 
 // --- GET FEATURED PRODUCTS ---
 export async function getFeaturedProducts(
@@ -84,15 +84,9 @@ export async function createProduct(
   res: Response,
 ): Promise<Response | void> {
   try {
-    // req.body is pre-validated by Zod before reaching this line
-    const body: CreateProductInput = req.body;
+    // req.body is pre-validated and coerced by Zod before reaching this line
     const { name, description, category, price, unit, stockQuantity } =
       req.body;
-
-    // Validate category
-    if (category && !PRODUCT_CATEGORY.includes(category)) {
-      return sendResponse(res, 400, "Invalid category");
-    }
 
     let imageUrl: string | undefined;
 
@@ -181,11 +175,6 @@ export async function updateProduct(
 
     const { name, description, category, price, unit, stockQuantity } =
       req.body;
-
-    // Validate category if updating it
-    if (category && !PRODUCT_CATEGORY.includes(category)) {
-      return sendResponse(res, 400, "Invalid category");
-    }
 
     let imageUrl: string | undefined;
 

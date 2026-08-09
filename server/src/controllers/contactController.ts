@@ -11,17 +11,7 @@ export async function sendContactMessage(
   try {
     const { name, email, phone, message } = req.body;
 
-    // Basic validation
-    if (!name || !email || !message) {
-      sendResponse(res, 400, "Name, email, and message are required");
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      sendResponse(res, 400, "Please provide a valid email address");
-      return;
-    }
+    // Input validation handled upstream by sendContactMessageSchema + validate() middleware.
 
     const toEmail = process.env.CONTACT_EMAIL_TO;
     if (!toEmail) {

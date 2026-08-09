@@ -3,13 +3,7 @@ import prisma from "../config/db";
 import { ROLES } from "../constants/enums";
 import { sendResponse } from "../utils/reponseHandler";
 
-// Basic guards — replace with zod/yup schema validation if you have one set up
-const isValidName = (v: unknown): v is string =>
-  typeof v === "string" && v.trim().length > 0 && v.length <= 100;
-const isValidPhone = (v: unknown): v is string =>
-  typeof v === "string" && /^\+?[0-9]{7,15}$/.test(v);
-const isValidAddress = (v: unknown): v is string =>
-  typeof v === "string" && v.length <= 300;
+
 
 export const syncUser = async (req: Request, res: Response): Promise<void> => {
   if (!req.user) {
@@ -29,20 +23,7 @@ export const syncUser = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  // Validate any client-supplied fields before they touch the DB.
-  // Reject rather than silently drop, so bad input doesn't fail invisibly.
-  if (bodyName !== undefined && !isValidName(bodyName)) {
-    sendResponse(res, 400, "Invalid name");
-    return;
-  }
-  if (phone !== undefined && phone !== "" && !isValidPhone(phone)) {
-    sendResponse(res, 400, "Invalid phone number");
-    return;
-  }
-  if (address !== undefined && !isValidAddress(address)) {
-    sendResponse(res, 400, "Invalid address");
-    return;
-  }
+  // Field validation is handled upstream by syncUserSchema + validate() middleware.
 
   // Prefer the verified token claim over client input for name —
   // client input is only a fallback for providers that don't supply a display name.

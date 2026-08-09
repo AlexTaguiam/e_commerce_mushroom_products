@@ -10,6 +10,12 @@ import {
 import { verifyFirebaseToken } from "../middleware/verifyFirebaseToken";
 import { requireAdmin } from "../middleware/requireAdmin";
 import { upload } from "../middleware/upload";
+import { validate } from "../middleware/validate";
+import {
+  createProductSchema,
+  updateProductSchema,
+  updateProductStatusSchema,
+} from "../schemas/product.schema";
 
 const router = Router();
 
@@ -24,6 +30,7 @@ router.post(
   verifyFirebaseToken,
   requireAdmin,
   upload.single("image"),
+  validate(createProductSchema),
   createProduct,
 );
 
@@ -32,6 +39,7 @@ router.patch(
   verifyFirebaseToken,
   requireAdmin,
   upload.single("image"),
+  validate(updateProductSchema),
   updateProduct,
 );
 
@@ -39,7 +47,9 @@ router.patch(
   "/:id/status",
   verifyFirebaseToken,
   requireAdmin,
+  validate(updateProductStatusSchema),
   updateProductStatus,
 );
 
 export default router;
+

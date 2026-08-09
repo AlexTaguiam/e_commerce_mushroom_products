@@ -7,13 +7,9 @@ export const createPaymentIntent = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
-  const { order_id } = req.body as { order_id: number };
+  // order_id validated upstream by createPaymentIntentSchema + validate() middleware.
+  const { order_id } = req.body;
   const uid = req.user!.uid;
-
-  if (!order_id) {
-    sendResponse(res, 400, "order_id is required");
-    return;
-  }
 
   try {
     // Step A: fetch + validate the order — plain Prisma, nothing new here

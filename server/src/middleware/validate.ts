@@ -1,35 +1,51 @@
 import { Request, Response, NextFunction } from "express";
-import { ZodObject, ZodError } from "zod";
+import { ZodSchema, ZodError } from "zod";
 
+/**
+ * Middleware factory that validates req.body against a Zod schema.
+ *
+ * The schema should be structured as:
+ *   z.object({ body: z.object({...}), params: z.object({...}).optional(), ... })
+ *
+ * On success:  req.body is replaced with the parsed/coerced result so Zod
+ *              defaults and coercions (e.g. z.coerce.number()) reach controllers.
+ * On ZodError: responds 400 with a flat list of field-level messages.
+ * On other errors: passed to next(error) — not swallowed here.
+ */
 export const validate =
-  (schema: ZodObject) =>
-  async (req: Request, res: Response, next: NextFunction) => {
+  (schema: ZodSchema) =>
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Validate body, query, and params simultaneously
-      await schema.parseAsync({
+      const parsed = await schema.parseAsync({
         body: req.body,
         query: req.query,
         params: req.params,
       });
-      return next();
+
+      // Replace req.body with the coerced/defaulted result from Zod
+      // so controllers receive clean, correctly-typed values.
+      if (parsed && typeof parsed === "object" && "body" in parsed) {
+        req.body = (parsed as { body: unknown }).body;
+      }
+
+      next();
     } catch (error) {
       if (error instanceof ZodError) {
-        // Format issues cleanly into field-level error messages
         const formattedErrors = error.issues.map((issue) => ({
-          field: issue.path.slice(1).join(".") || issue.path.join("."), // strips top-level 'body' prefix
+          // Strip the leading "body" / "params" / "query" segment from the path
+          field: issue.path.slice(1).join(".") || issue.path.join("."),
           message: issue.message,
         }));
 
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: "Validation failed.",
           errors: formattedErrors,
         });
+        return;
       }
 
-      return res.status(500).json({
-        success: false,
-        message: "Internal server error during validation.",
-      });
+      // Non-validation errors bubble up to Express error handler
+      next(error);
     }
   };

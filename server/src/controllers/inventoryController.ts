@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../config/db";
-import { from } from "node:stream/iter";
+
 import { sendResponse } from "../utils/reponseHandler";
 
 /**
@@ -77,20 +77,7 @@ export const restockProduct = async (
 
     const { productId, quantity, reason } = req.body;
 
-    // 3. Input Validation Guard
-    if (
-      !productId ||
-      quantity === undefined ||
-      isNaN(Number(quantity)) ||
-      Number(quantity) <= 0
-    ) {
-      sendResponse(
-        res,
-        400,
-        "A valid productId and a positive restock quantity are required.",
-      );
-      return;
-    }
+    // productId type and quantity range validated upstream by restockProductSchema.
 
     // 4. Verify product exists before making alterations
     const currentProduct = await prisma.product.findUnique({
@@ -162,19 +149,7 @@ export const adjustInventory = async (
 
     const { productId, adjustment, reason } = req.body;
 
-    if (
-      !productId ||
-      adjustment === undefined ||
-      isNaN(Number(adjustment)) ||
-      Number(adjustment) === 0
-    ) {
-      sendResponse(
-        res,
-        404,
-        "A valid productId and a non-zero adjustment value are required.",
-      );
-      return;
-    }
+    // productId and adjustment validated upstream by adjustInventorySchema.
 
     const currentProduct = await prisma.product.findUnique({
       where: { productId: Number(productId) },
