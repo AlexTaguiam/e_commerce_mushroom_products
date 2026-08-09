@@ -19,8 +19,59 @@ import {
   Percent,
   Zap,
   Check,
+  AlertCircle,
 } from "lucide-react";
 import { loginUser, registerUser } from "@/services/authService";
+
+// ---------------------------------------------------------------------------
+// Error Parser Helper
+// ---------------------------------------------------------------------------
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseAuthError(err: any): string {
+  const resMsg =
+    err?.response?.data?.error?.message || err?.response?.data?.message;
+  const rawMsg = resMsg || err?.message || "";
+
+  if (
+    rawMsg.includes("INVALID_LOGIN_CREDENTIALS") ||
+    rawMsg.includes("auth/invalid-credential") ||
+    rawMsg.includes("auth/user-not-found") ||
+    rawMsg.includes("auth/wrong-password") ||
+    rawMsg.includes("INVALID_PASSWORD")
+  ) {
+    return "Invalid email or password. Please check your credentials.";
+  }
+
+  if (
+    rawMsg.includes("auth/email-already-in-use") ||
+    rawMsg.includes("EMAIL_EXISTS")
+  ) {
+    return "An account with this email address already exists.";
+  }
+
+  if (
+    rawMsg.includes("auth/weak-password") ||
+    rawMsg.includes("WEAK_PASSWORD")
+  ) {
+    return "Password is too weak. Please use at least 6 characters.";
+  }
+
+  if (
+    rawMsg.includes("auth/invalid-email") ||
+    rawMsg.includes("INVALID_EMAIL")
+  ) {
+    return "Please enter a valid email address.";
+  }
+
+  if (
+    rawMsg.includes("auth/too-many-requests") ||
+    rawMsg.includes("TOO_MANY_ATTEMPTS_TRY_LATER")
+  ) {
+    return "Too many failed attempts. Please wait a few minutes before trying again.";
+  }
+
+  return "An unexpected authentication error occurred. Please try again.";
+}
 
 // ---------------------------------------------------------------------------
 // Form variant animation config
@@ -34,7 +85,6 @@ const formVariants: Variants = {
   animate: (_direction: number) => ({
     opacity: 1,
     x: 0,
-    // direction unused here but keeping the signature consistent
     transition: { duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] },
   }),
   exit: (direction: number) => ({
@@ -131,9 +181,11 @@ function LoginForm({ onSwitch }: LoginFormProps) {
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrorMessage(null);
 
     const formData = new FormData(e.currentTarget);
     const payload: LoginPayload = {
@@ -145,14 +197,15 @@ function LoginForm({ onSwitch }: LoginFormProps) {
     try {
       const response = await loginUser(payload.email, payload.password);
 
-      console.log("Login: ", response);
       if (response.data.role !== "admin") {
         navigate("/");
+        return;
       }
 
       navigate("/admin");
     } catch (err) {
       console.error("Login failed:", err);
+      setErrorMessage(parseAuthError(err));
     } finally {
       setIsLoading(false);
     }
@@ -179,6 +232,21 @@ function LoginForm({ onSwitch }: LoginFormProps) {
         </p>
       </div>
 
+      {/* Error Alert Banner */}
+      <AnimatePresence mode="wait">
+        {errorMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="flex items-start gap-3 p-3.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-medium leading-relaxed"
+          >
+            <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+            <span>{errorMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Fields */}
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Email */}
@@ -196,6 +264,7 @@ function LoginForm({ onSwitch }: LoginFormProps) {
               name="email"
               type="email"
               required
+              onChange={() => setErrorMessage(null)}
               placeholder="example@mushroomharvest.com"
               className="w-full h-12 pl-12 pr-4 text-base text-[#4c6a46] bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#4c6a46] focus:ring-2 focus:ring-[#4c6a46]/20 transition-all shadow-sm placeholder:text-gray-300"
             />
@@ -217,6 +286,7 @@ function LoginForm({ onSwitch }: LoginFormProps) {
               name="password"
               type={showPassword ? "text" : "password"}
               required
+              onChange={() => setErrorMessage(null)}
               placeholder="••••••••"
               className="w-full h-12 pl-12 pr-12 text-base text-[#4c6a46] bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#4c6a46] focus:ring-2 focus:ring-[#4c6a46]/20 transition-all shadow-sm"
             />
@@ -273,6 +343,7 @@ interface RegisterFormProps {
 interface RegisterPayload {
   email: string;
   password: string;
+  confirmPassword: string;
   name: string | null;
   phone: string | null;
   address: string | null;
@@ -285,22 +356,34 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!agreedToTerms) {
-      alert("Please agree to the Terms of Service and Privacy Policy.");
-      return;
-    }
+    setErrorMessage(null);
 
     const formData = new FormData(e.currentTarget);
     const payload: RegisterPayload = {
       email: formData.get("email") as string,
       password: formData.get("password") as string,
+      confirmPassword: formData.get("confirmPassword") as string,
       name: (formData.get("name") as string) || null,
       phone: (formData.get("phone") as string) || null,
       address: (formData.get("address") as string) || null,
     };
+
+    // Client-side validation checks
+    if (payload.password !== payload.confirmPassword) {
+      setErrorMessage("Passwords do not match. Please try again.");
+      return;
+    }
+
+    if (!agreedToTerms) {
+      setErrorMessage(
+        "Please agree to the Terms of Service and Privacy Policy.",
+      );
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -312,15 +395,15 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
         payload.address,
       );
 
-      console.log("Register: ", response);
-
       if (response.data.role !== "admin") {
         navigate("/");
+        return;
       }
 
       navigate("/admin");
     } catch (err) {
       console.error("Registration failed:", err);
+      setErrorMessage(parseAuthError(err));
     } finally {
       setIsLoading(false);
     }
@@ -348,6 +431,21 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
         </p>
       </div>
 
+      {/* Error Alert Banner */}
+      <AnimatePresence mode="wait">
+        {errorMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="flex items-start gap-3 p-3.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-medium leading-relaxed"
+          >
+            <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+            <span>{errorMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Fields */}
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Full Name */}
@@ -365,6 +463,7 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
               name="name"
               type="text"
               required
+              onChange={() => setErrorMessage(null)}
               placeholder="Juan Dela Cruz"
               className={inputClass}
             />
@@ -386,6 +485,7 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
               name="email"
               type="email"
               required
+              onChange={() => setErrorMessage(null)}
               placeholder="example@mushroomharvest.com"
               className={inputClass}
             />
@@ -407,6 +507,7 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
               id="reg-phone"
               name="phone"
               type="tel"
+              onChange={() => setErrorMessage(null)}
               placeholder="0912 345 6789"
               className={inputClass}
             />
@@ -428,6 +529,7 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
               id="reg-address"
               name="address"
               type="text"
+              onChange={() => setErrorMessage(null)}
               placeholder="Street, Barangay, City/Municipality"
               className={inputClass}
             />
@@ -449,6 +551,7 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
               name="password"
               type={showPassword ? "text" : "password"}
               required
+              onChange={() => setErrorMessage(null)}
               placeholder="••••••••"
               className="w-full h-12 pl-12 pr-12 text-[#4c6a46] text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#4c6a46] focus:ring-2 focus:ring-[#4c6a46]/20 transition-all shadow-sm"
             />
@@ -481,6 +584,7 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
               name="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
               required
+              onChange={() => setErrorMessage(null)}
               placeholder="••••••••"
               className="w-full h-12 pl-12 text-[#4c6a46] pr-12 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#4c6a46] focus:ring-2 focus:ring-[#4c6a46]/20 transition-all shadow-sm"
             />
@@ -505,11 +609,17 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
               id="terms"
               type="checkbox"
               checked={agreedToTerms}
-              onChange={(e) => setAgreedToTerms(e.target.checked)}
+              onChange={(e) => {
+                setAgreedToTerms(e.target.checked);
+                setErrorMessage(null);
+              }}
               className="peer sr-only"
             />
             <div
-              onClick={() => setAgreedToTerms(!agreedToTerms)}
+              onClick={() => {
+                setAgreedToTerms(!agreedToTerms);
+                setErrorMessage(null);
+              }}
               className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all cursor-pointer shadow-sm ${
                 agreedToTerms
                   ? "bg-[#4c6a46] border-[#4c6a46] text-white"
@@ -562,13 +672,11 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
 function LoginBrandPanel() {
   return (
     <div className="flex w-full h-full bg-[#243e27] p-12 lg:p-20 flex-col justify-between relative text-white overflow-hidden">
-      {/* Decorative blobs */}
       <div className="absolute top-0 right-0 w-125 h-125 bg-linear-to-b from-[#2d4d30] to-transparent rounded-full blur-3xl opacity-40 transform translate-x-1/4 -translate-y-1/4" />
       <div className="absolute bottom-12 right-12 text-[#2d4d30]/30 pointer-events-none">
         <Sparkles className="w-24 h-24 stroke-1" />
       </div>
 
-      {/* Support link */}
       <div className="flex justify-end relative z-10">
         <a
           href="#"
@@ -579,7 +687,6 @@ function LoginBrandPanel() {
         </a>
       </div>
 
-      {/* Feature card */}
       <div className="max-w-md my-auto space-y-12 relative z-10">
         <div className="bg-white rounded-3xl p-8 text-[#333333] shadow-2xl relative">
           <div className="space-y-3 w-[65%]">
@@ -599,7 +706,6 @@ function LoginBrandPanel() {
             Learn more
           </button>
 
-          {/* Membership card */}
           <div className="absolute -right-6 top-6 w-52 h-32 bg-[#e8e5da] border border-white/60 rounded-xl p-4 shadow-xl transform rotate-6 flex flex-col justify-between text-[#2d4029]">
             <div className="flex justify-between items-start">
               <span className="text-[10px] font-bold tracking-widest uppercase opacity-70">
@@ -618,7 +724,6 @@ function LoginBrandPanel() {
             </div>
           </div>
 
-          {/* Credits badge */}
           <div className="absolute right-4 -bottom-5 bg-white border border-gray-100 px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2.5 transform -rotate-2">
             <div className="w-7 h-7 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600">
               <Coins className="w-4 h-4 fill-amber-500/20" />
@@ -664,14 +769,12 @@ function LoginBrandPanel() {
 function RegisterBrandPanel() {
   return (
     <div className="flex w-full h-full bg-[#243e27] p-12 lg:p-16 flex-col justify-between relative text-white overflow-hidden">
-      {/* Decorative blobs */}
       <div className="absolute top-0 left-0 w-md h-112 bg-linear-to-br from-[#2d4d30] to-transparent rounded-full blur-3xl opacity-40 transform -translate-x-1/4 -translate-y-1/4" />
       <div className="absolute bottom-0 right-0 w-80 h-80 bg-linear-to-tl from-[#1b301e] to-transparent rounded-full blur-3xl opacity-30 transform translate-x-1/4 translate-y-1/4" />
       <div className="absolute top-1/3 right-12 text-[#2d4d30]/30 pointer-events-none">
         <Sparkles className="w-20 h-20 stroke-1" />
       </div>
 
-      {/* Brand */}
       <div className="flex items-center gap-3 relative z-10">
         <div className="w-10 h-10 bg-[#4c6a46] rounded-xl flex items-center justify-center shadow-sm">
           <span className="text-white font-serif text-xl font-bold">M</span>
@@ -681,7 +784,6 @@ function RegisterBrandPanel() {
         </span>
       </div>
 
-      {/* Marketing content */}
       <div className="my-auto space-y-10 relative z-10 max-w-lg">
         <div className="space-y-4">
           <h1 className="text-4xl lg:text-5xl font-serif font-bold tracking-wide leading-tight text-white">
@@ -693,7 +795,6 @@ function RegisterBrandPanel() {
           </p>
         </div>
 
-        {/* Benefits card */}
         <div className="bg-white rounded-2xl p-6 text-[#333333] shadow-xl border border-white/10 max-w-sm transform -rotate-1 hover:rotate-0 transition-transform duration-300">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-[#4c6a46]" />
@@ -750,9 +851,7 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Derive initial state from the current path
   const [isLogin, setIsLogin] = useState(location.pathname !== "/register");
-  // Direction: +1 = going to register, -1 = going to login
   const [direction, setDirection] = useState(1);
 
   const switchToRegister = () => {
@@ -770,7 +869,7 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen bg-[#f2efe8] flex items-center justify-center p-4 lg:p-8 font-sans antialiased select-none">
       <div className="w-full max-w-7xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
-        {/* ── Brand Panel (left) — crossfades between Login / Register variants ── */}
+        {/* Brand Panel */}
         <div
           className="hidden md:flex md:self-stretch relative"
           style={{ width: "55%" }}
@@ -800,9 +899,8 @@ export default function AuthPage() {
           </AnimatePresence>
         </div>
 
-        {/* ── Form Panel (right) — layout-animates height, content crossfades ── */}
+        {/* Form Panel */}
         <div className="w-full md:w-[45%] bg-[#faf8f4] flex flex-col justify-center px-6 py-10 sm:px-12 lg:px-14">
-          {/* Brand header (mobile only) */}
           <div className="flex items-center gap-3 mb-6 md:hidden">
             <div className="w-10 h-10 bg-[#4c6a46] rounded-xl flex items-center justify-center shadow-sm">
               <span className="text-white font-serif text-xl font-bold">M</span>
@@ -812,12 +910,6 @@ export default function AuthPage() {
             </span>
           </div>
 
-          {/*
-            motion.div with `layout` prop — this is the core trick.
-            When the inner content changes height (login → register), Framer Motion
-            smoothly interpolates the container height instead of snapping.
-            overflow-hidden clips any content that protrudes during the transition.
-          */}
           <motion.div
             layout
             transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}

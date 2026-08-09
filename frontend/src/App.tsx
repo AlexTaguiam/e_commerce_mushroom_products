@@ -7,28 +7,11 @@ import Footer from "./components/Footer";
 import { Toaster } from "sonner";
 import { killAllScrollTriggers } from "./utils/scrollTriggerCleanup";
 import { CartProvider } from "./context/CartProvider";
-const Toast = () => (
-  <div className="fixed bottom-4 right-4 z-50 pointer-events-none" />
-); // Toast notification mounting root
-const RateLimitNotice = ({ retryAfter }: { retryAfter: number }) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md text-white p-6">
-    <div className="bg-slate-950 border border-red-900 p-6 rounded-xl max-w-sm text-center">
-      <h3 className="text-red-500 font-bold text-lg">Too Many Requests</h3>
-      <p className="text-sm text-slate-400 mt-2">
-        Please wait {retryAfter} seconds before trying again.
-      </p>
-    </div>
-  </div>
-);
-
-// --- Mock Error Context (Swap with your real application error tracking hook) ---
-const useErrorContext = () => ({
-  error: null as { code: string; retryAfter: number } | null,
-});
+import { RateLimitProvider } from "./context/rateLimitProvider";
+import { RateLimitNotice } from "./components/RateLimitNotice";
 
 function AppShell() {
   const location = useLocation();
-  const { error } = useErrorContext();
 
   // Kill pinned ScrollTriggers synchronously before React unmounts the old page.
   // useLayoutEffect cleanup runs in the layout phase (before paint), not after unmount like useEffect.
@@ -57,7 +40,7 @@ function AppShell() {
       </div>
 
       {!hideGlobalLayout && <Footer />}
-      <Toast />
+
       <Toaster
         position="bottom-right"
         richColors
@@ -68,10 +51,7 @@ function AppShell() {
         }}
       />
 
-      {/* Network rate limit overlay modal guard */}
-      {error?.code === "RATE_LIMIT" && (
-        <RateLimitNotice retryAfter={error.retryAfter} />
-      )}
+      <RateLimitNotice />
     </div>
   );
 }
@@ -80,9 +60,11 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <CartProvider>
-          <AppShell />
-        </CartProvider>
+        <RateLimitProvider>
+          <CartProvider>
+            <AppShell />
+          </CartProvider>
+        </RateLimitProvider>
       </AuthProvider>
     </BrowserRouter>
   );

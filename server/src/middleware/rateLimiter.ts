@@ -1,4 +1,4 @@
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 
 // Global rate limiter for general API endpoints
 export const globalLimiter = rateLimit({
@@ -15,7 +15,7 @@ export const globalLimiter = rateLimit({
   },
   // Ensure precise IP extraction
   keyGenerator: (req) => {
-    return req.ip || req.socket.remoteAddress || "unknown-ip";
+    return ipKeyGenerator(req.ip || req.socket.remoteAddress || "unknown-ip");
   },
 });
 
@@ -34,6 +34,6 @@ export const authLimiter = rateLimit({
   // Optional: Only count failed attempts towards the limit so successful logins aren't penalized
   // skipSuccessfulRequests: true,
   keyGenerator: (req) => {
-    return req.ip || req.socket.remoteAddress || "unknown-ip";
+    return ipKeyGenerator(req.ip || req.socket.remoteAddress || "unknown-ip");
   },
 });

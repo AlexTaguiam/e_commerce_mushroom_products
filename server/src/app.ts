@@ -42,6 +42,7 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
     optionsSuccessStatus: 200,
+    exposedHeaders: ["Retry-After"], // 👈 Exposes Retry-After header to Axios
   }),
 );
 
