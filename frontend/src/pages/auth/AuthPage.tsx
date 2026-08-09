@@ -20,8 +20,9 @@ import {
   Zap,
   Check,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
-import { loginUser, registerUser } from "@/services/authService";
+import { loginUser, registerUser, socialAuth } from "@/services/authService";
 
 // ---------------------------------------------------------------------------
 // Error Parser Helper
@@ -30,8 +31,20 @@ import { loginUser, registerUser } from "@/services/authService";
 function parseAuthError(err: any): string {
   const resMsg =
     err?.response?.data?.error?.message || err?.response?.data?.message;
-  const rawMsg = resMsg || err?.message || "";
+  const rawMsg = resMsg || err?.message || err?.code || "";
 
+  // Social Auth Errors
+  if (rawMsg.includes("auth/popup-closed-by-user")) {
+    return "Sign-in popup was closed before completing. Please try again.";
+  }
+  if (rawMsg.includes("auth/popup-blocked")) {
+    return "Sign-in popup was blocked by your browser. Please allow popups for this site.";
+  }
+  if (rawMsg.includes("auth/account-exists-with-different-credential")) {
+    return "An account already exists with the same email address using a different sign-in method.";
+  }
+
+  // Standard Auth Errors
   if (
     rawMsg.includes("INVALID_LOGIN_CREDENTIALS") ||
     rawMsg.includes("auth/invalid-credential") ||
@@ -132,21 +145,44 @@ function FacebookIcon() {
   );
 }
 
-function SocialButtons() {
+interface SocialButtonsProps {
+  onSocialAuth: (provider: "google" | "facebook") => void;
+  isLoading: boolean;
+  activeProvider: "google" | "facebook" | null;
+}
+
+function SocialButtons({
+  onSocialAuth,
+  isLoading,
+  activeProvider,
+}: SocialButtonsProps) {
   return (
     <div className="grid grid-cols-2 gap-3">
       <button
         type="button"
-        className="flex text-[#4c6a46] items-center justify-center gap-2.5 h-12 px-4 border border-gray-200 bg-white rounded-full text-sm font-semibold hover:bg-gray-50 active:bg-gray-100 transition-colors shadow-sm"
+        disabled={isLoading}
+        onClick={() => onSocialAuth("google")}
+        className="flex text-[#4c6a46] items-center justify-center gap-2.5 h-12 px-4 border border-gray-200 bg-white rounded-full text-sm font-semibold hover:bg-gray-50 active:bg-gray-100 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        <GoogleIcon />
+        {isLoading && activeProvider === "google" ? (
+          <Loader2 className="w-5 h-5 animate-spin text-[#4c6a46]" />
+        ) : (
+          <GoogleIcon />
+        )}
         Google
       </button>
+
       <button
         type="button"
-        className="flex text-[#4c6a46] items-center justify-center gap-2.5 h-12 px-4 border border-gray-200 bg-white rounded-full text-sm font-semibold hover:bg-gray-50 active:bg-gray-100 transition-colors shadow-sm"
+        disabled={isLoading}
+        onClick={() => onSocialAuth("facebook")}
+        className="flex text-[#4c6a46] items-center justify-center gap-2.5 h-12 px-4 border border-gray-200 bg-white rounded-full text-sm font-semibold hover:bg-gray-50 active:bg-gray-100 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        <FacebookIcon />
+        {isLoading && activeProvider === "facebook" ? (
+          <Loader2 className="w-5 h-5 animate-spin text-[#1877F2]" />
+        ) : (
+          <FacebookIcon />
+        )}
         Facebook
       </button>
     </div>
@@ -181,9 +217,12 @@ function LoginForm({ onSwitch }: LoginFormProps) {
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeSocialProvider, setActiveSocialProvider] = useState<
+    "google" | "facebook" | null
+  >(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleStandardLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -208,6 +247,29 @@ function LoginForm({ onSwitch }: LoginFormProps) {
       setErrorMessage(parseAuthError(err));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSocialAuth = async (provider: "google" | "facebook") => {
+    setErrorMessage(null);
+    setIsLoading(true);
+    setActiveSocialProvider(provider);
+
+    try {
+      const result = await socialAuth(provider);
+
+      if (result.data.data.role !== "admin") {
+        navigate("/");
+        return;
+      }
+
+      navigate("/admin");
+    } catch (err) {
+      console.error(`Social login (${provider}) failed:`, err);
+      setErrorMessage(parseAuthError(err));
+    } finally {
+      setIsLoading(false);
+      setActiveSocialProvider(null);
     }
   };
 
@@ -248,7 +310,7 @@ function LoginForm({ onSwitch }: LoginFormProps) {
       </AnimatePresence>
 
       {/* Fields */}
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleStandardLogin} className="space-y-5">
         {/* Email */}
         <div className="space-y-1.5">
           <label
@@ -323,12 +385,16 @@ function LoginForm({ onSwitch }: LoginFormProps) {
           disabled={isLoading}
           className="w-full h-12 rounded-full text-base font-semibold tracking-wide shadow-md shadow-[#4c6a46]/10 transition-transform active:scale-[0.99]"
         >
-          {isLoading ? "Verifying..." : "Sign in"}
+          {isLoading && !activeSocialProvider ? "Verifying..." : "Sign in"}
         </Button>
       </form>
 
       <Divider />
-      <SocialButtons />
+      <SocialButtons
+        onSocialAuth={handleSocialAuth}
+        isLoading={isLoading}
+        activeProvider={activeSocialProvider}
+      />
     </div>
   );
 }
@@ -355,10 +421,15 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeSocialProvider, setActiveSocialProvider] = useState<
+    "google" | "facebook" | null
+  >(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleStandardRegister = async (
+    e: React.FormEvent<HTMLFormElement>,
+  ) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -372,7 +443,6 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
       address: (formData.get("address") as string) || null,
     };
 
-    // Client-side validation checks
     if (payload.password !== payload.confirmPassword) {
       setErrorMessage("Passwords do not match. Please try again.");
       return;
@@ -406,6 +476,29 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
       setErrorMessage(parseAuthError(err));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSocialAuth = async (provider: "google" | "facebook") => {
+    setErrorMessage(null);
+    setIsLoading(true);
+    setActiveSocialProvider(provider);
+
+    try {
+      const result = await socialAuth(provider);
+
+      if (result.data.data.role !== "admin") {
+        navigate("/");
+        return;
+      }
+
+      navigate("/admin");
+    } catch (err) {
+      console.error(`Social registration (${provider}) failed:`, err);
+      setErrorMessage(parseAuthError(err));
+    } finally {
+      setIsLoading(false);
+      setActiveSocialProvider(null);
     }
   };
 
@@ -447,7 +540,7 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
       </AnimatePresence>
 
       {/* Fields */}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleStandardRegister} className="space-y-4">
         {/* Full Name */}
         <div className="space-y-1.5">
           <label
@@ -656,12 +749,18 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
           disabled={isLoading}
           className="w-full h-12 rounded-full text-base font-semibold tracking-wide shadow-md shadow-[#4c6a46]/10 transition-all active:scale-[0.99] mt-1"
         >
-          {isLoading ? "Creating Account..." : "Create Account"}
+          {isLoading && !activeSocialProvider
+            ? "Creating Account..."
+            : "Create Account"}
         </Button>
       </form>
 
       <Divider />
-      <SocialButtons />
+      <SocialButtons
+        onSocialAuth={handleSocialAuth}
+        isLoading={isLoading}
+        activeProvider={activeSocialProvider}
+      />
     </div>
   );
 }

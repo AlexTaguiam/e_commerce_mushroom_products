@@ -5,6 +5,7 @@ import {
   signOut,
   FacebookAuthProvider,
   signInWithPopup,
+  GoogleAuthProvider,
 } from "firebase/auth";
 
 import { api } from "../api/client";
@@ -72,25 +73,35 @@ export const loginUser = async (
   }
 };
 
-/**
- * 3. Triggers Facebook popup login and passes the identity context to the sync gateway
- */
-export const loginWithFacebook = async (): Promise<AuthResponse> => {
-  try {
-    const provider = new FacebookAuthProvider();
-    await signInWithPopup(auth, provider);
+interface SocialAuthResult {
+  data: AuthResponse;
+  isNewUser: boolean;
+}
 
-    // No body payload needed here either!
-    // Your updated backend controller automatically falls back to token claims:
-    // finalName = bodyName || firebaseName || ""
+// Single dynamic entrypoint for both login and registration flows.
+// Backend upserts and tells us via status code whether this was a new account.
+export const socialAuth = async (
+  provider: "google" | "facebook",
+): Promise<SocialAuthResult> => {
+  try {
+    const authProvider =
+      provider === "google"
+        ? new GoogleAuthProvider()
+        : new FacebookAuthProvider();
+
+    await signInWithPopup(auth, authProvider);
+
     const response = await api.post<AuthResponse>("/auth/sync", {});
-    return response.data;
+
+    return {
+      data: response.data,
+      isNewUser: response.status === 201,
+    };
   } catch (error) {
-    console.error("Facebook authentication and database sync failure:", error);
+    console.error(`Social auth via ${provider} failed:`, error);
     throw error;
   }
 };
-
 /**
  * 4. Clears the active authentication session tokens
  */
