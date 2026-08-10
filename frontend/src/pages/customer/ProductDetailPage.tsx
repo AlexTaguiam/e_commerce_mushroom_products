@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/context/cartContext";
-import { api } from "@/api/client";
+import { getProductById } from "@/services/product.service";
 
 interface Product {
   productId: number;
@@ -44,9 +44,7 @@ export default function ProductDetailPage() {
       try {
         setLoading(true);
 
-        // Axios securely routes the request with your attached token interceptors
-        const response = await api.get(`/products/${productId}`);
-        const resData = response.data; // Axios wraps the backend payload inside .data
+        const resData = await getProductById(productId);
 
         if (resData.success && resData.data) {
           setProduct(resData.data);

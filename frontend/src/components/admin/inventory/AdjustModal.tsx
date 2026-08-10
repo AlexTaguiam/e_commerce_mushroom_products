@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { type Product } from "@/types/product";
-import { adminApi } from "@/api//client";
+import { adjustInventory } from "@/services/inventory.service";
 import {
   SlidersHorizontal,
   AlertTriangle,
@@ -69,7 +69,7 @@ export function AdjustModal({
     setErrorMsg(null);
 
     try {
-      await adminApi.post("/inventory/adjust", {
+      await adjustInventory({
         productId: Number(selectedProductId),
         adjustment: changeValue,
         reason:

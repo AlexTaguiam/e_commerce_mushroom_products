@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@/api/client";
+import { sendContactMessage } from "@/services/contact.service";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -64,18 +64,18 @@ export default function ContactForm() {
     try {
       setIsSubmitting(true);
 
-      const response = await api.post("/api/contact", {
+      const response = await sendContactMessage({
         name: formData.name.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim() || undefined,
         message: formData.message.trim(),
       });
 
-      if (response.data.success) {
-        toast.success(response.data.message || "Message sent successfully!");
+      if (response.success) {
+        toast.success(response.message || "Message sent successfully!");
         setFormData({ name: "", email: "", phone: "", message: "" });
       } else {
-        throw new Error(response.data.message || "Server processing error.");
+        throw new Error(response.message || "Server processing error.");
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

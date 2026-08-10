@@ -3,15 +3,9 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight, HelpCircle } from "lucide-react";
 import axios from "axios";
 // Adjust this import path to point directly to your shared Axios config file
-import { api } from "@/api/client";
+import { getFeaturedProducts } from "@/services/product.service";
 import ProductCard, { type Product } from "./ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
-
-interface ApiResponse {
-  success: boolean;
-  message: string;
-  data: Product[];
-}
 
 export default function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -27,13 +21,9 @@ export default function FeaturedProducts() {
         setIsLoading(true);
         setError(null);
 
-        // Data extraction directly via your customized Axios client instance
-        const response = await api.get<ApiResponse>("/products/featured", {
+        const resData = await getFeaturedProducts({
           signal: controller.signal,
         });
-
-        // Axios automatically unboxes status checks (2xx rules) and parses JSON structures into .data
-        const resData = response.data;
 
         if (resData.success) {
           setProducts(resData.data || []);

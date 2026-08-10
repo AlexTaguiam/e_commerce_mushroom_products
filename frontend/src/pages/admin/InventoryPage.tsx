@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { type Product } from "@/types/product";
 import { type InventoryLog } from "@/types/inventory";
-import { adminApi } from "@/api/client";
+import { getInventoryLogs } from "@/services/inventory.service";
+import { getProducts } from "@/services/product.service";
 import { InventoryLogTable } from "@/components/admin/inventory/InventoryLogTable";
 import { RestockModal } from "@/components/admin/inventory/RestockModal";
 import { AdjustModal } from "@/components/admin/inventory/AdjustModal";
@@ -42,7 +43,7 @@ export default function InventoryPage() {
         setLoading(true);
 
         // Fetch products for dropdowns and KPIs
-        const productsRes = await adminApi.get("/products");
+        const productsRes = await getProducts();
 
         // Fetch logs (pass product_id param if filtered)
         const params: Record<string, string> = {};
@@ -50,11 +51,11 @@ export default function InventoryPage() {
           params.product_id = selectedProductId;
         }
 
-        const logsRes = await adminApi.get("/inventory/logs", { params });
+        const logsRes = await getInventoryLogs(params);
 
         if (isSubscribed) {
-          setProducts(productsRes.data?.data || []);
-          setLogs(logsRes.data?.data || []);
+          setProducts(productsRes.data || []);
+          setLogs(logsRes.data || []);
         }
       } catch (err) {
         console.error("Failed to load inventory data:", err);

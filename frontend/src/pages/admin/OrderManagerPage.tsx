@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
-import { adminApi } from "@/api/client";
+import {
+  cancelOrder,
+  confirmOrder,
+  getOrders,
+  updateOrderStatus,
+} from "@/services/order.service";
 import { type Order, type OrderStatus } from "@/types/order";
 import { getOrderActions, getStatusBadgeConfig } from "@/utils/orderAction";
 import { toast } from "sonner";
@@ -48,11 +53,9 @@ import {
 
 type TabOption = "all" | OrderStatus;
 
-// Unwraps a single-order API response. Backend shape is
-// { success, message, data: <order> } — so the order lives at res.data.data.
-function unwrapOrder(res: any): Order | null {
-  const candidate =
-    res?.data?.data?.order ?? res?.data?.data ?? res?.data?.order ?? null;
+// Unwraps a single-order API response from service layer.
+function unwrapOrder(res: { data?: Order | null }): Order | null {
+  const candidate = res?.data ?? null;
   if (candidate && typeof candidate === "object" && "orderId" in candidate) {
     return candidate as Order;
   }
@@ -86,13 +89,12 @@ export default function OrderManagerPage() {
 
     const loadOrders = async () => {
       try {
-        const endpoint =
-          activeTab === "all" ? "/orders" : `/orders?status=${activeTab}`;
-        const res = await adminApi.get<any>(endpoint);
+        const res = await getOrders(
+          activeTab === "all" ? undefined : { status: activeTab },
+        );
 
         if (!ignore) {
-          const fetchedOrders =
-            res.data?.data?.orders || res.data?.orders || res.data || [];
+          const fetchedOrders = res.data?.orders || [];
           const ordersArray = Array.isArray(fetchedOrders) ? fetchedOrders : [];
           setOrders(ordersArray);
           if (activeTab === "all") {
@@ -112,13 +114,9 @@ export default function OrderManagerPage() {
       // Keep pending counter updated when viewing non-all tabs
       if (activeTab !== "all") {
         try {
-          const pendingRes = await adminApi.get<any>("/orders?status=pending");
+          const pendingRes = await getOrders({ status: "pending" });
           if (!ignore && pendingRes.data) {
-            const fetchedOrders =
-              pendingRes.data?.data?.orders ||
-              pendingRes.data?.orders ||
-              pendingRes.data ||
-              [];
+            const fetchedOrders = pendingRes.data.orders || [];
             const ordersArray = Array.isArray(fetchedOrders)
               ? fetchedOrders
               : [];
@@ -141,11 +139,10 @@ export default function OrderManagerPage() {
   const handleManualRefresh = async () => {
     setLoading(true);
     try {
-      const endpoint =
-        activeTab === "all" ? "/orders" : `/orders?status=${activeTab}`;
-      const res = await adminApi.get<any>(endpoint);
-      const fetchedOrders =
-        res.data?.data?.orders || res.data?.orders || res.data || [];
+      const res = await getOrders(
+        activeTab === "all" ? undefined : { status: activeTab },
+      );
+      const fetchedOrders = res.data?.orders || [];
       const ordersArray = Array.isArray(fetchedOrders) ? fetchedOrders : [];
       setOrders(ordersArray);
       if (activeTab === "all") {
@@ -169,20 +166,17 @@ export default function OrderManagerPage() {
     setActionLoadingId(order.orderId);
 
     try {
-      let res;
+      let updatedOrder: Order | null;
       if (primaryAction.endpointType === "confirm") {
-        res = await adminApi.patch<Order>(`/orders/${order.orderId}/confirm`);
+        await confirmOrder(order.orderId);
+        updatedOrder = { ...order, status: "confirmed" as OrderStatus };
       } else {
-        res = await adminApi.patch<Order>(`/orders/${order.orderId}/status`, {
-          status: primaryAction.nextStatus,
-        });
+        const res = await updateOrderStatus(
+          order.orderId,
+          primaryAction.nextStatus!,
+        );
+        updatedOrder = unwrapOrder(res);
       }
-
-      const updatedOrder =
-        unwrapOrder(res) ??
-        (primaryAction.endpointType === "confirm"
-          ? { ...order, status: "confirmed" as OrderStatus }
-          : null);
 
       if (!updatedOrder) {
         throw new Error("Unexpected response shape from status update");
@@ -224,9 +218,7 @@ export default function OrderManagerPage() {
     setActionLoadingId(targetOrder.orderId);
 
     try {
-      const res = await adminApi.patch<Order>(
-        `/orders/${targetOrder.orderId}/cancel`,
-      );
+      const res = await cancelOrder(targetOrder.orderId);
       const updatedOrder = unwrapOrder(res);
       if (!updatedOrder) {
         throw new Error("Unexpected response shape from cancel");

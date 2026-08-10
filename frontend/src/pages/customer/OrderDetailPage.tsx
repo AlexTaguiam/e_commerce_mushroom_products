@@ -8,7 +8,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@/api/client";
+import { cancelOrder, getOrderById } from "@/services/order.service";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import StepTracker from "@/components/StepTracker";
@@ -55,12 +55,12 @@ export default function OrderDetailPage() {
       if (!orderId) return;
       try {
         setLoading(true);
-        const response = await api.get(`/orders/${orderId}`);
-        if (response.data?.success && response.data?.data) {
-          setOrder(response.data.data);
+        const resData = await getOrderById(orderId);
+        if (resData.success && resData.data) {
+          setOrder(resData.data);
         } else {
           setError(
-            response.data?.message ||
+            resData.message ||
               "The specific order details are inaccessible.",
           );
         }
@@ -98,17 +98,15 @@ export default function OrderDetailPage() {
     try {
       setIsCancelling(true);
 
-      // Axios automatically appends the base URL and authorization tokens
-      // Triggers: POST to http://localhost:3000/api/orders/:orderId/cancel
-      const response = await api.patch(`/orders/${order.orderId}/cancel`);
+      const response = await cancelOrder(order.orderId);
 
-      if (response.data?.success) {
+      if (response.success) {
         toast.success("Your order has been cancelled successfully.");
 
         // Instantly switch local state status to 'cancelled' so UI dynamically reflects it
         setOrder((prev) => (prev ? { ...prev, status: "cancelled" } : null));
       } else {
-        toast.error(response.data?.message || "Failed to cancel the order.");
+        toast.error(response.message || "Failed to cancel the order.");
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

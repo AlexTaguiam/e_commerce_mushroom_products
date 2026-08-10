@@ -8,7 +8,7 @@ import {
   RefreshCw,
   ArrowRight,
 } from "lucide-react";
-import { api } from "@/api/client";
+import { getOrderById } from "@/services/order.service";
 import { Button } from "@/components/ui/button";
 
 const MAX_POLL_ATTEMPTS = 5;
@@ -31,9 +31,9 @@ export default function PaymentResultPage() {
       if (!orderId) return;
 
       try {
-        const response = await api.get(`/orders/${orderId}`);
-        if (response.data?.success && response.data?.data) {
-          const orderData = response.data.data;
+        const resData = await getOrderById(orderId);
+        if (resData.success && resData.data) {
+          const orderData = resData.data;
           setOrder(orderData);
 
           const pending = isPendingPayment(orderData.paymentStatus);
@@ -42,7 +42,7 @@ export default function PaymentResultPage() {
           }
         } else {
           setErrorMessage(
-            response.data?.message ||
+            resData.message ||
               "Invoice record details match fault errors.",
           );
           setLoading(false);
@@ -67,11 +67,11 @@ export default function PaymentResultPage() {
 
     void (async () => {
       try {
-        const response = await api.get(`/orders/${orderId}`);
+        const resData = await getOrderById(orderId);
         if (cancelled) return;
 
-        if (response.data?.success && response.data?.data) {
-          const orderData = response.data.data;
+        if (resData.success && resData.data) {
+          const orderData = resData.data;
           setOrder(orderData);
 
           const pending = isPendingPayment(orderData.paymentStatus);
@@ -80,7 +80,7 @@ export default function PaymentResultPage() {
           }
         } else {
           setErrorMessage(
-            response.data?.message ||
+            resData.message ||
               "Invoice record details match fault errors.",
           );
           setLoading(false);

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { getAuth, onAuthStateChanged, type User } from "firebase/auth";
 import { AuthContext, type AuthUserTemplate } from "./authContext";
-import { logOut } from "../services/authService";
+import { logOut } from "../services/auth.service";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Inbox } from "lucide-react";
-import { api } from "@/api/client";
+import { getOrders } from "@/services/order.service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import OrderCard from "@/components/OrderCard";
@@ -35,8 +35,7 @@ export default function OrdersPage() {
       try {
         setLoading(true);
 
-        const response = await api.get("/orders");
-        const resData = response.data; // The root JSON body with success, message, data
+        const resData = await getOrders();
 
         if (resData.success && resData.data) {
           // Extract the nested orders array directly from the shape: resData.data.orders

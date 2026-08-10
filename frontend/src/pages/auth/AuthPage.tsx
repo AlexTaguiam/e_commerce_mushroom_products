@@ -22,7 +22,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
-import { loginUser, registerUser, socialAuth } from "@/services/authService";
+import { loginUser, registerUser, socialAuth } from "@/services/auth.service";
 
 // ---------------------------------------------------------------------------
 // Error Parser Helper

@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
-import { adminApi } from "@/api/client";
+import {
+  getDashboardSummary,
+  getFulfillmentRatio,
+  getLowStock,
+  getRecentOrders,
+  getRevenueOverview,
+} from "@/services/dashboard.service";
 import {
   TrendingUp,
   TrendingDown,
@@ -73,21 +79,20 @@ export const Dashboard: React.FC = () => {
 
   // 1. A pure function that ONLY fetches data (no setState here)
   const fetchEndpoints = async () => {
-    const [sumRes, revRes, fulRes, ordRes, stockRes] = await Promise.all([
-      adminApi.get("/dashboard/summary"),
-      adminApi.get("/dashboard/revenue-overview"),
-      adminApi.get("/dashboard/fulfillment-ratio"),
-      adminApi.get("/dashboard/recent-orders"),
-      adminApi.get("/dashboard/low-stock"),
+    const [sum, rev, ful, ord, stock] = await Promise.all([
+      getDashboardSummary(),
+      getRevenueOverview(),
+      getFulfillmentRatio(),
+      getRecentOrders(),
+      getLowStock(),
     ]);
 
-    // Axios wraps response payloads in .data
     return {
-      sum: sumRes.data,
-      rev: revRes.data,
-      ful: fulRes.data,
-      ord: ordRes.data,
-      stock: stockRes.data,
+      sum,
+      rev,
+      ful,
+      ord,
+      stock,
     };
   };
 

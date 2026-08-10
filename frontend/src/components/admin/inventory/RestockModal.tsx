@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { type Product } from "@/types/product";
-import { adminApi } from "@/api/client";
+import { restockProduct } from "@/services/inventory.service";
 import { PlusCircle, Package, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,7 +51,7 @@ export function RestockModal({
     setErrorMsg(null);
 
     try {
-      await adminApi.post("/inventory/restock", {
+      await restockProduct({
         productId: Number(selectedProductId),
         quantity: restockQty,
         reason: reason.trim() || "Standard stock replenishment",

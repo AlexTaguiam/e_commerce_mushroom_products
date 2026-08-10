@@ -3,7 +3,7 @@ import { SlidersHorizontal, ShoppingBag } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import CategoryFilter from "@/components/CategoryFilter";
 import { Skeleton } from "@/components/ui/skeleton";
-import { api } from "@/api/client";
+import { getProducts } from "@/services/product.service";
 
 interface Product {
   productId: number;
@@ -29,9 +29,7 @@ export default function CatalogPage() {
       try {
         setLoading(true);
 
-        // Axios automatically passes the authentication tokens attached via your interceptors
-        const response = await api.get("/products");
-        const resData = response.data; // Axios wraps the response payload inside .data
+        const resData = await getProducts();
 
         if (resData.success) {
           // Explicitly isolate active inventory allocations

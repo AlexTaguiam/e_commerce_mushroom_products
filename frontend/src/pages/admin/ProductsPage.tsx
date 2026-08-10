@@ -10,7 +10,12 @@ import { ProductFormModal } from "@/components/admin/products/ProductFormModal";
 import { Plus, Search, Filter, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { adminApi } from "@/api/client"; // Adjust import path to match your file structure
+import {
+  createProduct,
+  getProducts,
+  updateProduct,
+  updateProductStatus,
+} from "@/services/product.service";
 import { toast } from "sonner";
 
 export default function ProductsPage() {
@@ -39,11 +44,10 @@ export default function ProductsPage() {
         if (selectedCategory !== "all") params.category = selectedCategory;
         if (selectedStatus !== "all") params.status = selectedStatus;
 
-        const res = await adminApi.get("/products", { params });
+        const res = await getProducts(params);
 
         if (isSubscribed) {
-          // Unwraps responseHandler payload structure (res.data.data)
-          setProducts(res.data?.data || []);
+          setProducts(res.data || []);
         }
       } catch (err) {
         console.error("Failed to fetch products:", err);
@@ -73,11 +77,9 @@ export default function ProductsPage() {
     newStatus: ProductStatus,
   ) => {
     try {
-      const res = await adminApi.patch(`/products/${productId}/status`, {
-        status: newStatus,
-      });
+      const res = await updateProductStatus(productId, newStatus);
 
-      if (res.status === 200) {
+      if (res.success) {
         setProducts((prev) =>
           prev.map((p) =>
             p.productId === productId ? { ...p, status: newStatus } : p,
@@ -98,19 +100,18 @@ export default function ProductsPage() {
     productId?: number,
   ) => {
     try {
-      const endpoint = isEdit ? `/products/${productId}` : "/products";
       const config = {
         headers: {
-          "Content-Type": undefined, // Allows browser to generate boundary
+          "Content-Type": undefined,
         },
         timeout: 30000,
       };
 
-      if (isEdit) {
-        await adminApi.patch(endpoint, formData, config);
+      if (isEdit && productId !== undefined) {
+        await updateProduct(productId, formData, config);
         toast.success("Update Successfull");
       } else {
-        await adminApi.post(endpoint, formData, config);
+        await createProduct(formData, config);
         toast.success("New Product Added Sucessfuly");
       }
 

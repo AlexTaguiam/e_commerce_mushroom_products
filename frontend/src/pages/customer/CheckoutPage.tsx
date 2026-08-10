@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/context/cartContext"; // Adjust path based on absolute workspace layouts
-import { api } from "@/api/client";
+import { createOrder } from "@/services/order.service";
+import { createPaymentIntent } from "@/services/payment.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -84,16 +85,16 @@ export default function CheckoutPage() {
 
     try {
       // Step 1: Initialize Database Order Transaction Frame
-      const orderResponse = await api.post("/orders", payload);
+      const orderResponse = await createOrder(payload);
 
-      if (!orderResponse.data?.success || !orderResponse.data?.data) {
+      if (!orderResponse.success || !orderResponse.data) {
         throw new Error(
-          orderResponse.data?.message ||
+          orderResponse.message ||
             "Failed to initialize order instance allocations.",
         );
       }
 
-      createdOrder = orderResponse.data.data;
+      createdOrder = orderResponse.data;
 
       // Step 2: Branch Execution Pathways Based on Payment Methods
       if (paymentMethod === "cod") {
@@ -103,13 +104,10 @@ export default function CheckoutPage() {
       } else {
         // PayMongo Hosted Gateway Routine Check
         try {
-          const intentResponse = await api.post("/create-intent", {
-            order_id: createdOrder.orderId,
-          });
+          const intentResponse = await createPaymentIntent(createdOrder.orderId);
 
           if (intentResponse.data?.checkout_url) {
             clearCart();
-            // Perform explicit redirection out of current DOM ecosystem context
             window.location.href = intentResponse.data.checkout_url;
           } else {
             throw new Error(
