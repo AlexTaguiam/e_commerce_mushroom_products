@@ -42,8 +42,7 @@ export default function PaymentResultPage() {
           }
         } else {
           setErrorMessage(
-            resData.message ||
-              "Invoice record details match fault errors.",
+            resData.message || "Invoice record details match fault errors.",
           );
           setLoading(false);
         }
@@ -80,8 +79,7 @@ export default function PaymentResultPage() {
           }
         } else {
           setErrorMessage(
-            resData.message ||
-              "Invoice record details match fault errors.",
+            resData.message || "Invoice record details match fault errors.",
           );
           setLoading(false);
         }
@@ -148,11 +146,10 @@ export default function PaymentResultPage() {
           {errorMessage}
         </p>
         <Button
-          asChild
-          className="bg-[#4c6a46] hover:bg-[#3d5538] text-white rounded-xl shadow-md font-semibold text-xs px-6 h-10"
-        >
-          <Link to="/orders">Return to Orders Tracker</Link>
-        </Button>
+          nativeButton={false}
+          className="bg-[#4c6a46] hover:bg-[#3d5538] text-white rounded-xl shadow-md font-semibold px-6"
+          render={<Link to="/orders">Return to Trackers</Link>}
+        />
       </div>
     );
   }
@@ -240,16 +237,17 @@ export default function PaymentResultPage() {
           )}
 
           <Button
-            asChild
+            nativeButton={false}
             className={`w-full rounded-xl text-xs font-bold bg-[#4c6a46] hover:bg-[#3d5538] text-white h-10 shadow-md flex items-center justify-center gap-2 ${
               isPaid ? "" : "order-1 sm:order-2"
             }`}
-          >
-            <Link to={`/orders/${order.orderId}`}>
-              <span>Go to Order Details</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </Button>
+            render={
+              <Link to={`/orders/${order.orderId}`}>
+                <span>Go to Order Details</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            }
+          />
         </div>
       </div>
     </div>

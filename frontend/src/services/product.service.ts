@@ -48,7 +48,9 @@ export const getProductById = async (
   productId: string | number,
 ): Promise<ApiResponse<Product>> => {
   try {
-    const result = await api.get<ApiResponse<Product>>(`/products/${productId}`);
+    const result = await api.get<ApiResponse<Product>>(
+      `/products/${productId}`,
+    );
     console.log("Product By Id Result: ", result.data);
     return result.data;
   } catch (error) {

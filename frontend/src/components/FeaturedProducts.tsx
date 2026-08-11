@@ -4,7 +4,8 @@ import { ArrowUpRight, HelpCircle } from "lucide-react";
 import axios from "axios";
 // Adjust this import path to point directly to your shared Axios config file
 import { getFeaturedProducts } from "@/services/product.service";
-import ProductCard, { type Product } from "./ProductCard";
+import ProductCard from "./ProductCard";
+import { type Product } from "../types/product";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function FeaturedProducts() {

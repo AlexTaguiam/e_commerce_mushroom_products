@@ -81,12 +81,13 @@ export default function CartPage() {
           <Button
             variant="ghost"
             className="text-[#4c6a46] hover:text-[#3d5538] hover:bg-[#4c6a46]/5 rounded-xl text-sm font-semibold self-start sm:self-center gap-2"
-          >
-            <Link to="/catalog">
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to Catalog</span>
-            </Link>
-          </Button>
+            render={
+              <Link to="/catalog" className="flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to Catalog</span>
+              </Link>
+            }
+          />
         </div>
 
         {/* TWO COLUMN RESPONSIVE GRID MATRIX */}

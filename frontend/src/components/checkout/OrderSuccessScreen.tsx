@@ -54,31 +54,33 @@ export default function OrderSuccessScreen({
 
         <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
           <Button
-            asChild
+            nativeButton={false}
             variant="outline"
             className="w-full rounded-xl text-xs font-bold border-gray-200 text-gray-500 h-10 order-2 sm:order-1"
-          >
-            <Link
-              to="/catalog"
-              className="flex items-center justify-center gap-2"
-            >
-              <ShoppingBag className="w-3.5 h-3.5" />
-              <span>Continue Shopping</span>
-            </Link>
-          </Button>
+            render={
+              <Link
+                to="/catalog"
+                className="flex items-center justify-center gap-2"
+              >
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>Continue Shopping</span>
+              </Link>
+            }
+          />
 
           <Button
-            asChild
+            nativeButton={false}
             className="w-full rounded-xl text-xs font-bold bg-[#4c6a46] hover:bg-[#3d5538] text-white h-10 shadow-md order-1 sm:order-2"
-          >
-            <Link
-              to={`/orders/${orderId}`}
-              className="flex items-center justify-center gap-2"
-            >
-              <span>Track Order Status</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </Button>
+            render={
+              <Link
+                to={`/orders/${orderId}`}
+                className="flex items-center justify-center gap-2"
+              >
+                <span>Track Order Status</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            }
+          />
         </div>
       </div>
     </div>

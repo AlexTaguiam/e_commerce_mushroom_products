@@ -2,8 +2,6 @@ import { Request, Response } from "express";
 import prisma from "../config/db";
 import { sendResponse } from "../utils/reponseHandler";
 
-
-
 export const createOrder = async (
   req: Request,
   res: Response,
@@ -19,6 +17,7 @@ export const createOrder = async (
     const {
       items,
       deliveryAddress,
+      contactPhone,
       paymentMethod,
       fulfillmentType,
     } = req.body;

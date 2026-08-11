@@ -4,19 +4,20 @@ import ProductCard from "@/components/ProductCard";
 import CategoryFilter from "@/components/CategoryFilter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getProducts } from "@/services/product.service";
+import { type Product } from "@/types/product";
 
-interface Product {
-  productId: number;
-  name: string;
-  description: string;
-  category: string;
-  price: string;
-  unit: string;
-  stockQuantity: number;
-  imageUrl: string;
-  status: string;
-  createdAt: string;
-}
+// interface Product {
+//   productId: number;
+//   name: string;
+//   description: string;
+//   category: string;
+//   price: string;
+//   unit: string;
+//   stockQuantity: number;
+//   imageUrl: string;
+//   status: string;
+//   createdAt: string;
+// }
 
 export default function CatalogPage() {
   const [products, setProducts] = useState<Product[]>([]);

@@ -4,26 +4,27 @@ import { getOrders } from "@/services/order.service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import OrderCard from "@/components/OrderCard";
+import { type Order } from "@/types/order";
 
-interface Order {
-  orderId: number;
-  userId: string;
-  orderDate: string;
-  fulfillmentType: "pickup" | "delivery";
-  deliveryAddress: string | null;
-  status:
-    | "pending"
-    | "confirmed"
-    | "ready"
-    | "out_for_delivery"
-    | "completed"
-    | "cancelled";
-  paymentMethod: "cod" | "paymongo";
-  paymentStatus: "unpaid" | "paid" | "pending";
-  totalAmount: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  orderItems: any[];
-}
+// interface Order {
+//   orderId: number;
+//   userId: string;
+//   orderDate: string;
+//   fulfillmentType: "pickup" | "delivery";
+//   deliveryAddress: string | null;
+//   status:
+//     | "pending"
+//     | "confirmed"
+//     | "ready"
+//     | "out_for_delivery"
+//     | "completed"
+//     | "cancelled";
+//   paymentMethod: "cod" | "paymongo";
+//   paymentStatus: "unpaid" | "paid" | "pending";
+//   totalAmount: string;
+//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   orderItems: any[];
+// }
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);

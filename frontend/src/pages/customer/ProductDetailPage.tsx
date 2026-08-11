@@ -13,19 +13,20 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/context/cartContext";
 import { getProductById } from "@/services/product.service";
+import { type Product } from "@/types/product";
 
-interface Product {
-  productId: number;
-  name: string;
-  description: string;
-  category: string;
-  price: string;
-  unit: string;
-  stockQuantity: number;
-  imageUrl: string;
-  status: string;
-  createdAt: string;
-}
+// interface Product {
+//   productId: number;
+//   name: string;
+//   description: string;
+//   category: string;
+//   price: string;
+//   unit: string;
+//   stockQuantity: number;
+//   imageUrl: string;
+//   status: string;
+//   createdAt: string;
+// }
 
 export default function ProductDetailPage() {
   const { productId } = useParams<{ productId: string }>();
@@ -84,11 +85,10 @@ export default function ProductDetailPage() {
             "The individual catalog item you are trying to view cannot be discovered or has been sunsetted."}
         </p>
         <Button
-          asChild
+          nativeButton={false}
           className="bg-[#4c6a46] hover:bg-[#3d5538] text-white rounded-xl shadow-md font-semibold px-6"
-        >
-          <Link to="/products">Return to Catalog</Link>
-        </Button>
+          render={<Link to="/products">Return to Catalog</Link>}
+        />
       </div>
     );
   }

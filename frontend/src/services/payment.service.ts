@@ -17,7 +17,7 @@ export const createPaymentIntent = async (
 ): Promise<ApiResponse<PaymentIntentData>> => {
   try {
     const result = await api.post<ApiResponse<PaymentIntentData>>(
-      "/payment/create-intent",
+      "/create-intent",
       { order_id: orderId },
     );
     console.log("Payment Intent Result: ", result.data);

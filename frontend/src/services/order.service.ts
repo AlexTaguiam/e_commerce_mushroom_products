@@ -1,5 +1,6 @@
 import { api } from "../api/client";
 import { type Order, type OrderStatus } from "../types/order";
+// import { type CartItem } from "@/types/cart";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -15,11 +16,16 @@ export interface CreateOrderPayload {
   items: Array<{ productId: number; quantity: number }>;
 }
 
-export interface CreateOrderData {
-  orderId: number;
-  totalAmount: number | string;
-  itemsCoumt?: number;
-  paymentStatus?: string;
+// orderId: result?.order.orderId,
+// totalAmount: result?.order.totalAmount,
+// itemsCoumt: result?.order.orderItems.length,
+// paymentStatus: result?.order.status,
+
+export interface OrderReturnData {
+  orderId: string;
+  totalAmount: number;
+  itemsCount: number;
+  paymentStatus: string;
 }
 
 export interface GetOrdersParams {
@@ -33,9 +39,10 @@ export interface OrdersListData {
 
 export const createOrder = async (
   payload: CreateOrderPayload,
-): Promise<ApiResponse<CreateOrderData>> => {
+): Promise<ApiResponse<OrderReturnData>> => {
   try {
-    const result = await api.post<ApiResponse<CreateOrderData>>(
+    console.log("Payload inside create Order:", payload);
+    const result = await api.post<ApiResponse<OrderReturnData>>(
       "/orders",
       payload,
     );

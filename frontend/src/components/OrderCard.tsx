@@ -1,34 +1,35 @@
 import { Link } from "react-router-dom";
 import { Calendar, ArrowRight } from "lucide-react";
 import StepTracker from "./StepTracker";
+import { type Order } from "@/types/order";
 
-interface OrderItem {
-  quantity: number;
-  priceAtOrder: string;
-  product: {
-    name: string;
-    imageUrl: string;
-  };
-}
+// interface OrderItem {
+//   quantity: number;
+//   priceAtOrder: string;
+//   product: {
+//     name: string;
+//     imageUrl: string;
+//   };
+// }
 
-interface Order {
-  orderId: number;
-  userId: string;
-  orderDate: string;
-  fulfillmentType: "pickup" | "delivery";
-  deliveryAddress: string | null;
-  status:
-    | "pending"
-    | "confirmed"
-    | "ready"
-    | "out_for_delivery"
-    | "completed"
-    | "cancelled";
-  paymentMethod: "cod" | "paymongo";
-  paymentStatus: "unpaid" | "paid" | "pending";
-  totalAmount: string;
-  orderItems: OrderItem[];
-}
+// interface Order {
+//   orderId: number;
+//   userId: string;
+//   orderDate: string;
+//   fulfillmentType: "pickup" | "delivery";
+//   deliveryAddress: string | null;
+//   status:
+//     | "pending"
+//     | "confirmed"
+//     | "ready"
+//     | "out_for_delivery"
+//     | "completed"
+//     | "cancelled";
+//   paymentMethod: "cod" | "paymongo";
+//   paymentStatus: "unpaid" | "paid" | "pending";
+//   totalAmount: string;
+//   orderItems: OrderItem[];
+// }
 
 interface OrderCardProps {
   order: Order;
@@ -53,6 +54,7 @@ export default function OrderCard({ order }: OrderCardProps) {
     paid: "bg-green-50 text-green-700 border-green-100",
     pending: "bg-amber-50 text-amber-700 border-amber-100",
     unpaid: "bg-red-50 text-red-700 border-red-100",
+    cancelled: "bg-red-50 text-red-700 border-red-100",
   };
 
   return (

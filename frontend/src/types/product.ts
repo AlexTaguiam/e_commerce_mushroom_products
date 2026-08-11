@@ -15,11 +15,11 @@ export interface Product {
   name: string;
   description?: string;
   category: ProductCategory;
-  price: number;
+  price: string;
   unit: string;
   stockQuantity: number;
   status: ProductStatus;
-  imageUrl?: string;
+  imageUrl: string;
   createdAt?: string;
   updatedAt?: string;
 }

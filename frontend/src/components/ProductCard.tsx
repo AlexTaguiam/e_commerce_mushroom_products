@@ -4,19 +4,7 @@ import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cartContext";
-
-export interface Product {
-  productId: number;
-  name: string;
-  description: string;
-  category: string;
-  price: string;
-  unit: string;
-  stockQuantity: number;
-  imageUrl: string;
-  status: string;
-  createdAt: string;
-}
+import { type Product } from "@/types/product";
 
 interface ProductCardProps {
   product: Product;

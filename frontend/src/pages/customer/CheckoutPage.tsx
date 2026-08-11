@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import OrderSuccessScreen from "@/components/checkout/OrderSuccessScreen";
+import { type CartItem } from "@/types/cart";
+import { type OrderReturnData } from "@/services/order.service";
 
 interface FormValidationErrors {
   contactPhone?: string;
@@ -26,6 +28,7 @@ interface FormValidationErrors {
 
 export default function CheckoutPage() {
   const { cartItems, cartTotal, clearCart } = useCart();
+  console.log("cartItems: ", cartItems);
 
   // Checkout Matrix States
   const [fulfillmentType, setFulfillmentType] = useState<"delivery" | "pickup">(
@@ -73,19 +76,21 @@ export default function CheckoutPage() {
       deliveryAddress: fulfillmentType === "delivery" ? deliveryAddress : "",
       contactPhone,
       paymentMethod,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      items: cartItems.map((item: any) => ({
-        productId: item.productId || item.product?.id,
+
+      items: cartItems.map((item: CartItem) => ({
+        productId: item.productId,
         quantity: item.quantity,
       })),
     };
 
-    // eslint-disable-next-line no-useless-assignment, @typescript-eslint/no-explicit-any
-    let createdOrder: any = null;
+    console.log("payload: ", payload);
+
+    let createdOrder: OrderReturnData;
 
     try {
       // Step 1: Initialize Database Order Transaction Frame
       const orderResponse = await createOrder(payload);
+      console.log("OrderResponse:", orderResponse);
 
       if (!orderResponse.success || !orderResponse.data) {
         throw new Error(
@@ -104,7 +109,9 @@ export default function CheckoutPage() {
       } else {
         // PayMongo Hosted Gateway Routine Check
         try {
-          const intentResponse = await createPaymentIntent(createdOrder.orderId);
+          const intentResponse = await createPaymentIntent(
+            Number(createdOrder.orderId),
+          );
 
           if (intentResponse.data?.checkout_url) {
             clearCart();
@@ -166,10 +173,11 @@ export default function CheckoutPage() {
           stages.
         </p>
         <Button
-          asChild
+          nativeButton={false}
+          render={<Link to="/catalog"></Link>}
           className="bg-[#4c6a46] hover:bg-[#3d5538] text-white rounded-xl shadow-md font-semibold text-xs px-6 h-10"
         >
-          <Link to="/catalog">Browse Our Catalog</Link>
+          Browse Our Catalog
         </Button>
       </div>
     );
@@ -180,15 +188,16 @@ export default function CheckoutPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <div className="flex items-center">
           <Button
-            asChild
+            nativeButton={false}
+            render={
+              <Link to="/cart">
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Return to Shopping Cart</span>
+              </Link>
+            }
             variant="ghost"
             className="text-[#4c6a46] hover:text-[#3d5538] hover:bg-[#4c6a46]/5 rounded-xl font-semibold text-xs gap-2 -ml-2"
-          >
-            <Link to="/cart">
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Return to Shopping Cart</span>
-            </Link>
-          </Button>
+          ></Button>
         </div>
 
         <h1 className="font-serif font-bold text-2xl sm:text-3xl text-[#2d4029]">
@@ -410,10 +419,8 @@ export default function CheckoutPage() {
 
             {/* Read-only Allocation Items Loop Pipeline */}
             <div className="divide-y divide-gray-100 max-h-[30vh] overflow-y-auto pr-1">
-              {/*eslint-disable-next-line @typescript-eslint/no-explicit-any*/}
-              {cartItems.map((item: any, i: number) => {
-                const price =
-                  parseFloat(item.priceAtOrder || item.product?.price) || 0;
+              {cartItems.map((item: CartItem, i: number) => {
+                const price = parseFloat(item?.price) || 0;
                 const lineTotal = price * item.quantity;
                 return (
                   <div
@@ -422,7 +429,7 @@ export default function CheckoutPage() {
                   >
                     <div className="overflow-hidden space-y-0.5">
                       <span className="text-xs font-bold text-[#2d4029] block truncate">
-                        {item.product?.name || "Inventory Allocation"}
+                        {item?.name || "Inventory Allocation"}
                       </span>
                       <span className="text-[11px] text-gray-400 font-medium block">
                         ₱{price.toLocaleString()} × {item.quantity}

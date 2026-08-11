@@ -12,34 +12,35 @@ import { cancelOrder, getOrderById } from "@/services/order.service";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import StepTracker from "@/components/StepTracker";
+import { type Order as OrderDetail } from "@/types/order";
 
-interface OrderItem {
-  quantity: number;
-  priceAtOrder: string;
-  product: {
-    name: string;
-    imageUrl: string;
-  };
-}
+// interface OrderItem {
+//   quantity: number;
+//   priceAtOrder: string;
+//   product: {
+//     name: string;
+//     imageUrl: string;
+//   };
+// }
 
-interface OrderDetail {
-  orderId: number;
-  userId: string;
-  orderDate: string;
-  fulfillmentType: "pickup" | "delivery";
-  deliveryAddress: string | null;
-  status:
-    | "pending"
-    | "confirmed"
-    | "ready"
-    | "out_for_delivery"
-    | "completed"
-    | "cancelled";
-  paymentMethod: "cod" | "paymongo";
-  paymentStatus: "unpaid" | "paid" | "pending";
-  totalAmount: string;
-  orderItems: OrderItem[];
-}
+// interface OrderDetail {
+//   orderId: number;
+//   userId: string;
+//   orderDate: string;
+//   fulfillmentType: "pickup" | "delivery";
+//   deliveryAddress: string | null;
+//   status:
+//     | "pending"
+//     | "confirmed"
+//     | "ready"
+//     | "out_for_delivery"
+//     | "completed"
+//     | "cancelled";
+//   paymentMethod: "cod" | "paymongo";
+//   paymentStatus: "unpaid" | "paid" | "pending";
+//   totalAmount: string;
+//   orderItems: OrderItem[];
+// }
 
 export default function OrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -60,8 +61,7 @@ export default function OrderDetailPage() {
           setOrder(resData.data);
         } else {
           setError(
-            resData.message ||
-              "The specific order details are inaccessible.",
+            resData.message || "The specific order details are inaccessible.",
           );
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -137,11 +137,10 @@ export default function OrderDetailPage() {
             "The individual parameter string requested could not be unpacked successfully."}
         </p>
         <Button
-          asChild
+          nativeButton={false}
           className="bg-[#4c6a46] hover:bg-[#3d5538] text-white rounded-xl shadow-md font-semibold px-6"
-        >
-          <Link to="/orders">Return to Trackers</Link>
-        </Button>
+          render={<Link to="/orders">Return to Trackers</Link>}
+        />
       </div>
     );
   }
