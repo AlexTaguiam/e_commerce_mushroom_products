@@ -76,7 +76,7 @@ export function OrderDetailSheet({
 
         {/* Action Bar inside Drawer */}
         {(primaryAction || canCancel) && (
-          <div className="my-5 p-4 rounded-xl bg-slate-950/80 border border-slate-800 flex flex-wrap items-center justify-between gap-3">
+          <div className="my-5 p-4  rounded-xl bg-slate-950/80 border border-slate-800 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-medium text-slate-400">
                 Current Action
@@ -130,6 +130,9 @@ export function OrderDetailSheet({
               <p className="text-sm font-semibold text-slate-200">
                 {order.userName || "Registered Customer"}
               </p>
+              <span className="text-xs text-gray-500">
+                📞 {order.contactPhone || "No phone provided"}
+              </span>
               <p className="text-xs font-mono text-slate-500 truncate mt-0.5">
                 ID: {order.userId}
               </p>

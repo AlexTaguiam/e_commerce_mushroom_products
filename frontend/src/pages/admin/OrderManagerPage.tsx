@@ -49,6 +49,7 @@ import {
   Eye,
   Calendar,
   Package,
+  Phone,
 } from "lucide-react";
 
 type TabOption = "all" | OrderStatus;
@@ -661,6 +662,16 @@ export default function OrderManagerPage() {
                   </p>
                 </div>
               )}
+
+              <div className="p-3.5 rounded-xl bg-[#faf8f4] border border-[#e5dfd3]">
+                <div className="flex items-center gap-1.5 text-xs text-stone-500 mb-1 font-semibold">
+                  <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                  Contact Phone
+                </div>
+                <p className="text-xs text-stone-700 leading-relaxed font-medium">
+                  {selectedOrder.contactPhone || "Not provided"}
+                </p>
+              </div>
 
               {/* Items List */}
               <div>

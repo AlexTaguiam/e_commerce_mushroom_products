@@ -47,6 +47,7 @@ model Order {
   orderDate       DateTime @default(now()) @map("order_date")
   fulfillmentType String   @map("fulfillment_type")
   deliveryAddress String?  @map("delivery_address")
+  contactPhone    String?  @map("contact_phone")
   status          String   @default("pending")
   paymentMethod   String   @map("payment_method")
   paymentStatus   String   @default("unpaid") @map("payment_status")

@@ -67,6 +67,7 @@ export const createOrder = async (
       const newOrder = await tx.order.create({
         data: {
           userId: databaseUser.firebaseUid,
+          contactPhone, // 📸 Point-in-time snapshot from checkout form
           totalAmount: computedTotalAmount,
           status: "pending",
           fulfillmentType: fulfillmentType,
@@ -89,6 +90,14 @@ export const createOrder = async (
           orderItems: true,
         },
       });
+
+      // Update user profile if phone number has changed
+      if (contactPhone && contactPhone !== databaseUser.phone) {
+        await tx.user.update({
+          where: { firebaseUid: databaseUser.firebaseUid },
+          data: { phone: contactPhone },
+        });
+      }
 
       const paymentLog = await tx.payment.create({
         data: {

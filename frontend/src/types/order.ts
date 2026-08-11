@@ -22,6 +22,7 @@ export interface OrderItem {
 export interface Order {
   orderId: number;
   userId: string;
+  contactPhone: string | null;
   userName?: string;
   userEmail?: string;
   orderDate: string;

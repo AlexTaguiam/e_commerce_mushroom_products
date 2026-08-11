@@ -8,8 +8,8 @@ import { z } from "zod";
  * - paymentMethod is a strict enum: "cod" | "paymongo"
  * - items must be a non-empty array of { productId: Int, quantity: positive int }
  * - deliveryAddress is conditionally required when fulfillmentType === "delivery"
- * - contactPhone is NOT in this schema — it has no DB column and is rejected by
- *   .strict() (Q1: option c — surface the bug, don't silently drop it)
+ * - contactPhone is a required field — it snapshots the customer's phone number
+ *   at checkout into orders.contact_phone (independent of User.phone)
  */
 export const createOrderSchema = z.object({
   body: z
