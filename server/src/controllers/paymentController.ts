@@ -7,12 +7,12 @@ export const createPaymentIntent = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
-  // order_id validated upstream by createPaymentIntentSchema + validate() middleware.
-  const { order_id } = req.body;
+  // order_id & paymentMethod validated upstream or passed from request body
+  const { order_id, paymentMethod } = req.body;
   const uid = req.user!.uid;
 
   try {
-    // Step A: fetch + validate the order — plain Prisma, nothing new here
+    // Step A: Fetch & validate order
     const order = await prisma.order.findUnique({
       where: { orderId: order_id },
     });
@@ -27,7 +27,9 @@ export const createPaymentIntent = async (
       return;
     }
 
-    if (order.paymentMethod !== "paymongo") {
+    // Allow gcash, card, or general paymongo methods
+    const allowedOnlineMethods = ["gcash", "card", "paymongo"];
+    if (!allowedOnlineMethods.includes(order.paymentMethod)) {
       sendResponse(res, 400, "This order is not set up for online payment");
       return;
     }
@@ -37,58 +39,89 @@ export const createPaymentIntent = async (
       return;
     }
 
-    // Step B: create the Payment Intent — amount is in centavos, so ₱250.00 -> 25000
-
+    // Determine target payment method (prefer request body, fallback to order field)
+    const targetMethod = paymentMethod || order.paymentMethod;
     const amountInCentavos = Math.round(Number(order.totalAmount) * 100);
 
-    const { data: intentRes } = await paymongo.post("/payment_intents", {
-      data: {
-        attributes: {
-          amount: amountInCentavos,
-          currency: "PHP",
-          payment_method_allowed: ["gcash", "card"],
-          payment_method_options: {
-            card: { request_three_d_secure: "automatic" },
-          },
-          capture_type: "automatic",
-          metadata: { order_id: String(order.orderId) },
-        },
-      },
-    });
-    const paymentIntent = intentRes.data;
+    let checkoutUrl: string | undefined;
+    let transactionRef: string;
 
-    // Step C: create a GCash Payment Method
-    const { data: methodRes } = await paymongo.post("/payment_methods", {
-      data: { attributes: { type: "gcash" } },
-    });
-    const paymentMethod = methodRes.data;
-
-    // Step D: attach — this is the call that actually returns the checkout URL
-    const { data: attachRes } = await paymongo.post(
-      `/payment_intents/${paymentIntent.id}/attach`,
-      {
+    // Step B: Branch flow based on selected method
+    if (targetMethod === "card") {
+      // --- CARD FLOW (PayMongo Hosted Checkout Session for PCI Compliance) ---
+      const { data: sessionRes } = await paymongo.post("/checkout_sessions", {
         data: {
           attributes: {
-            payment_method: paymentMethod.id,
-            return_url: `${process.env.CLIENT_URL}/orders/${order.orderId}/payment-result`,
+            amount: amountInCentavos,
+            currency: "PHP",
+            payment_method_types: ["card"],
+            description: `Payment for Order #${order.orderId}`,
+            line_items: [
+              {
+                amount: amountInCentavos,
+                currency: "PHP",
+                name: `Order #${order.orderId}`,
+                quantity: 1,
+              },
+            ],
+            cancel_url: `${process.env.CLIENT_URL}/checkout`,
+            success_url: `${process.env.CLIENT_URL}/orders/${order.orderId}/payment-result`,
+            metadata: { order_id: String(order.orderId) },
           },
         },
-      },
-    );
-    const attached = attachRes.data;
-    const checkoutUrl = attached.attributes.next_action?.redirect?.url;
+      });
 
-    // Step E: save the PayMongo intent id so the webhook can find this
-    // order later — update, not create, since Payment already exists (1:1)
+      const session = sessionRes.data;
+      checkoutUrl = session.attributes.checkout_url;
+      // Store payment intent ID if generated, otherwise fallback to session ID
+      transactionRef = session.attributes.payment_intent?.id || session.id;
+    } else {
+      // --- GCASH / DEFAULT FLOW (Payment Intent + Attached Payment Method) ---
+      const { data: intentRes } = await paymongo.post("/payment_intents", {
+        data: {
+          attributes: {
+            amount: amountInCentavos,
+            currency: "PHP",
+            payment_method_allowed: ["gcash"],
+            capture_type: "automatic",
+            metadata: { order_id: String(order.orderId) },
+          },
+        },
+      });
+      const paymentIntent = intentRes.data;
+
+      // Create Payment Method
+      const { data: methodRes } = await paymongo.post("/payment_methods", {
+        data: { attributes: { type: "gcash" } },
+      });
+      const pm = methodRes.data;
+
+      // Attach Payment Method
+      const { data: attachRes } = await paymongo.post(
+        `/payment_intents/${paymentIntent.id}/attach`,
+        {
+          data: {
+            attributes: {
+              payment_method: pm.id,
+              return_url: `${process.env.CLIENT_URL}/orders/${order.orderId}/payment-result`,
+            },
+          },
+        },
+      );
+      const attached = attachRes.data;
+      checkoutUrl = attached.attributes.next_action?.redirect?.url;
+      transactionRef = paymentIntent.id;
+    }
+
+    // Step C: Save transaction reference for webhooks
     await prisma.payment.update({
       where: { orderId: order.orderId },
-      data: { transactionRef: paymentIntent.id },
+      data: { transactionRef },
     });
 
-    sendResponse(res, 200, "Payment intent created successfully", {
+    sendResponse(res, 200, "Payment session initialized successfully", {
       checkout_url: checkoutUrl,
-      payment_intent_id: paymentIntent.id,
-      client_key: attached.attributes.client_key,
+      payment_intent_id: transactionRef,
     });
     return;
   } catch (error: any) {

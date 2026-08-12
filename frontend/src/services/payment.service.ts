@@ -14,11 +14,12 @@ export interface PaymentIntentData {
 
 export const createPaymentIntent = async (
   orderId: number,
+  paymentMethod: "gcash" | "card",
 ): Promise<ApiResponse<PaymentIntentData>> => {
   try {
     const result = await api.post<ApiResponse<PaymentIntentData>>(
       "payments/create-intent",
-      { order_id: orderId },
+      { order_id: orderId, paymentMethod },
     );
     console.log("Payment Intent Result: ", result.data);
     return result.data;

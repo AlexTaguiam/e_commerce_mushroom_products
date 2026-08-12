@@ -11,6 +11,7 @@ import { z } from "zod";
  * required by HMAC signature verification — applying Zod there would break
  * the signature check.
  */
+
 export const createPaymentIntentSchema = z.object({
   body: z
     .object({
@@ -18,6 +19,12 @@ export const createPaymentIntentSchema = z.object({
         .number({ message: "order_id must be a number" })
         .int("order_id must be a whole number")
         .positive("order_id must be a positive integer"),
+
+      paymentMethod: z
+        .enum(["gcash", "card", "paymongo"], {
+          message: 'paymentMethod must be "gcash", "card", or "paymongo"',
+        })
+        .optional(),
     })
     .strict(),
 });
@@ -25,4 +32,3 @@ export const createPaymentIntentSchema = z.object({
 export type CreatePaymentIntentBody = z.infer<
   typeof createPaymentIntentSchema
 >["body"];
-

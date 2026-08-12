@@ -11,6 +11,7 @@ import { z } from "zod";
  * - contactPhone is a required field — it snapshots the customer's phone number
  *   at checkout into orders.contact_phone (independent of User.phone)
  */
+
 export const createOrderSchema = z.object({
   body: z
     .object({
@@ -18,8 +19,8 @@ export const createOrderSchema = z.object({
         message: 'fulfillmentType must be "delivery" or "pickup"',
       }),
 
-      paymentMethod: z.enum(["cod", "paymongo"], {
-        message: 'paymentMethod must be "cod" or "paymongo"',
+      paymentMethod: z.enum(["cod", "gcash", "card", "paymongo"], {
+        message: 'paymentMethod must be "cod", "gcash", "card", or "paymongo"',
       }),
 
       items: z
@@ -42,8 +43,8 @@ export const createOrderSchema = z.object({
 
       deliveryAddress: z
         .string()
-        .min(1, "deliveryAddress cannot be blank")
-        .optional(),
+        .optional()
+        .transform((val) => (val?.trim() === "" ? undefined : val)),
 
       contactPhone: z
         .string({ message: "contactPhone is required" })
@@ -52,7 +53,10 @@ export const createOrderSchema = z.object({
     .strict()
     .superRefine((data, ctx) => {
       // deliveryAddress is required when fulfillmentType is "delivery"
-      if (data.fulfillmentType === "delivery" && !data.deliveryAddress) {
+      if (
+        data.fulfillmentType === "delivery" &&
+        (!data.deliveryAddress || data.deliveryAddress.trim() === "")
+      ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["deliveryAddress"],

@@ -10,10 +10,18 @@ interface ApiResponse<T> {
 
 export interface CreateOrderPayload {
   fulfillmentType: "pickup" | "delivery";
-  deliveryAddress: string;
+  deliveryAddress?: string; // Optional for store pickup
   contactPhone: string;
-  paymentMethod: "cod" | "paymongo";
-  items: Array<{ productId: number; quantity: number }>;
+  paymentMethod: "cod" | "gcash" | "card";
+  items: Array<{
+    productId: number;
+    quantity: number;
+  }>;
+}
+
+export interface CreatePaymentIntentPayload {
+  order_id: number;
+  paymentMethod?: "gcash" | "card";
 }
 
 // orderId: result?.order.orderId,

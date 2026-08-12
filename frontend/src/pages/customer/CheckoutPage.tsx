@@ -5,12 +5,13 @@ import {
   Store,
   Banknote,
   Smartphone,
+  CreditCard,
   ShoppingBag,
   Loader2,
   ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useCart } from "@/context/cartContext"; // Adjust path based on absolute workspace layouts
+import { useCart } from "@/context/cartContext";
 import { createOrder } from "@/services/order.service";
 import { createPaymentIntent } from "@/services/payment.service";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import OrderSuccessScreen from "@/components/checkout/OrderSuccessScreen";
 import { type CartItem } from "@/types/cart";
 import { type OrderReturnData } from "@/services/order.service";
+import { type CreateOrderPayload } from "@/services/order.service";
 
 interface FormValidationErrors {
   contactPhone?: string;
@@ -36,7 +38,9 @@ export default function CheckoutPage() {
   );
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [contactPhone, setContactPhone] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"cod" | "paymongo">("cod");
+  const [paymentMethod, setPaymentMethod] = useState<"cod" | "gcash" | "card">(
+    "cod",
+  );
 
   const [errors, setErrors] = useState<FormValidationErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,15 +75,19 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     // Structural conversion matching back-end signature targets
-    const payload = {
+    // Clean payload structure matching backend schema
+    const payload: CreateOrderPayload = {
       fulfillmentType,
-      deliveryAddress: fulfillmentType === "delivery" ? deliveryAddress : "",
-      contactPhone,
+      contactPhone: contactPhone.trim(),
+      // Map non-COD payment methods to 'paymongo' if your backend order schema requires it,
+      // or pass paymentMethod directly if backend accepts 'gcash' and 'card'
       paymentMethod,
-
+      ...(fulfillmentType === "delivery" && {
+        deliveryAddress: deliveryAddress.trim(),
+      }),
       items: cartItems.map((item: CartItem) => ({
-        productId: item.productId,
-        quantity: item.quantity,
+        productId: Number(item.productId),
+        quantity: Number(item.quantity),
       })),
     };
 
@@ -109,11 +117,12 @@ export default function CheckoutPage() {
         setPlacedOrder(createdOrder);
         toast.success("Your balance structure configuration cleared.");
       } else {
-        // PayMongo Hosted Gateway Routine Check
-        console.log("Paymongo method");
+        // PayMongo Hosted Gateway Routine Check (Handles GCash & Card)
+        console.log("Paymongo gateway method triggered:", paymentMethod);
         try {
           const intentResponse = await createPaymentIntent(
             Number(createdOrder.orderId),
+            paymentMethod,
           );
 
           if (intentResponse.data?.checkout_url) {
@@ -350,11 +359,12 @@ export default function CheckoutPage() {
               </Label>
               <RadioGroup
                 value={paymentMethod}
-                onValueChange={(val: "cod" | "paymongo") =>
+                onValueChange={(val: "cod" | "gcash" | "card") =>
                   setPaymentMethod(val)
                 }
-                className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                className="grid grid-cols-1 sm:grid-cols-3 gap-3"
               >
+                {/* Option A: Cash On Delivery */}
                 <div>
                   <RadioGroupItem
                     value="cod"
@@ -370,42 +380,70 @@ export default function CheckoutPage() {
                     }`}
                   >
                     <Banknote
-                      className={`w-4 h-4 ${paymentMethod === "cod" ? "text-[#4c6a46]" : "text-gray-400"}`}
+                      className={`w-4 h-4 shrink-0 ${paymentMethod === "cod" ? "text-[#4c6a46]" : "text-gray-400"}`}
                     />
                     <div className="flex flex-col">
                       <span className="text-xs font-bold">
                         Cash On Delivery
                       </span>
                       <span className="text-[10px] text-gray-400 font-medium">
-                        Settle manually at receipt
+                        Settle at receipt
                       </span>
                     </div>
                   </Label>
                 </div>
 
+                {/* Option B: GCash */}
                 <div>
                   <RadioGroupItem
-                    value="paymongo"
-                    id="pay-paymongo"
+                    value="gcash"
+                    id="pay-gcash"
                     className="sr-only"
                   />
                   <Label
-                    htmlFor="pay-paymongo"
+                    htmlFor="pay-gcash"
                     className={`flex items-center gap-3 border rounded-2xl p-4 cursor-pointer hover:bg-gray-50/50 transition-all ${
-                      paymentMethod === "paymongo"
+                      paymentMethod === "gcash"
                         ? "border-[#4c6a46] bg-[#4c6a46]/5 text-[#2d4029] ring-1 ring-[#4c6a46]"
                         : "border-gray-200 text-gray-500"
                     }`}
                   >
                     <Smartphone
-                      className={`w-4 h-4 ${paymentMethod === "paymongo" ? "text-[#4c6a46]" : "text-gray-400"}`}
+                      className={`w-4 h-4 shrink-0 ${paymentMethod === "gcash" ? "text-[#4c6a46]" : "text-gray-400"}`}
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold">GCash</span>
+                      <span className="text-[10px] text-gray-400 font-medium">
+                        Via PayMongo
+                      </span>
+                    </div>
+                  </Label>
+                </div>
+
+                {/* Option C: Credit / Debit Card */}
+                <div>
+                  <RadioGroupItem
+                    value="card"
+                    id="pay-card"
+                    className="sr-only"
+                  />
+                  <Label
+                    htmlFor="pay-card"
+                    className={`flex items-center gap-3 border rounded-2xl p-4 cursor-pointer hover:bg-gray-50/50 transition-all ${
+                      paymentMethod === "card"
+                        ? "border-[#4c6a46] bg-[#4c6a46]/5 text-[#2d4029] ring-1 ring-[#4c6a46]"
+                        : "border-gray-200 text-gray-500"
+                    }`}
+                  >
+                    <CreditCard
+                      className={`w-4 h-4 shrink-0 ${paymentMethod === "card" ? "text-[#4c6a46]" : "text-gray-400"}`}
                     />
                     <div className="flex flex-col">
                       <span className="text-xs font-bold">
-                        GCash / Card Gateway
+                        Credit / Debit Card
                       </span>
                       <span className="text-[10px] text-gray-400 font-medium">
-                        Secured via PayMongo
+                        Via PayMongo
                       </span>
                     </div>
                   </Label>
