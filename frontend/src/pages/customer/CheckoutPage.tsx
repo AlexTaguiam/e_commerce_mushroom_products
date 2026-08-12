@@ -101,6 +101,8 @@ export default function CheckoutPage() {
 
       createdOrder = orderResponse.data;
 
+      console.log("Method", paymentMethod);
+
       // Step 2: Branch Execution Pathways Based on Payment Methods
       if (paymentMethod === "cod") {
         clearCart();
@@ -108,6 +110,7 @@ export default function CheckoutPage() {
         toast.success("Your balance structure configuration cleared.");
       } else {
         // PayMongo Hosted Gateway Routine Check
+        console.log("Paymongo method");
         try {
           const intentResponse = await createPaymentIntent(
             Number(createdOrder.orderId),

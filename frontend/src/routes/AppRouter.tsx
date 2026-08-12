@@ -21,6 +21,7 @@ import OrderDetailPage from "@/pages/customer/OrderDetailPage";
 
 import AdminLayout from "@/components/admin/AdminLayout";
 import ProductsPage from "@/pages/admin/ProductsPage";
+import PaymentResultPage from "@/pages/customer/PaymentResultPage";
 
 const publicRoutes = (
   <>
@@ -39,6 +40,10 @@ const customerRoutes = (
     <Route path="/orders/:orderId" element={<OrderDetailPage />} />
     <Route path="/products/:productId" element={<ProductDetailPage />} />
     <Route path="/contact" element={<ContactPage />} />
+    <Route
+      path="/orders/:orderId/payment-result"
+      element={<PaymentResultPage />}
+    />
   </>
 );
 

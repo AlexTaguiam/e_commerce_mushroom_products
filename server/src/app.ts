@@ -46,7 +46,7 @@ app.use(
   }),
 );
 
-app.use("/webhooks", paymongoWebhookRouter);
+app.use("/api/payments/webhook", paymongoWebhookRouter);
 app.use(express.json());
 app.set("trust proxy", 1);
 app.use(globalLimiter); // Apply global rate limiter to all routes
@@ -56,7 +56,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api", contactRoutes);
-app.use("/api/payment", paymentRoutes);
+app.use("/api/payments", paymentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));

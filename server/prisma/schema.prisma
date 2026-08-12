@@ -101,3 +101,12 @@ model InventoryLog {
 
   @@map("inventory_logs")
 }
+
+model WebhookEvent {
+  id          Int      @id @default(autoincrement())
+  eventId     String   @unique @map("event_id")
+  eventType   String   @map("event_type")
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@map("webhook_events")
+}
