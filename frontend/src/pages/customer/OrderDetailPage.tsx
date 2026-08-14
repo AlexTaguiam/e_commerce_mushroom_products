@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { isAxiosError } from "axios";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -9,6 +10,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cancelOrder, getOrderById } from "@/services/order.service";
+import { createPaymentIntent } from "@/services/payment.service";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import StepTracker from "@/components/StepTracker";
@@ -50,6 +52,7 @@ export default function OrderDetailPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState<boolean>(false);
+  const [isRetryingPayment, setIsRetryingPayment] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchDetailedInvoice = async () => {
@@ -116,6 +119,30 @@ export default function OrderDetailPage() {
       );
     } finally {
       setIsCancelling(false);
+    }
+  };
+
+  const handleRetryPayment = async () => {
+    if (!order || order.paymentMethod === "cod") return;
+
+    setIsRetryingPayment(true);
+    try {
+      const intentResponse = await createPaymentIntent(
+        order.orderId,
+        order.paymentMethod,
+      );
+      if (intentResponse.data?.checkout_url) {
+        window.location.href = intentResponse.data.checkout_url;
+      } else {
+        toast.error("Could not restart payment. Please try again.");
+      }
+    } catch (err: unknown) {
+      const errorMessage = isAxiosError<{ message?: string }>(err)
+        ? err.response?.data?.message
+        : undefined;
+      toast.error(errorMessage || "Failed to retry payment.");
+    } finally {
+      setIsRetryingPayment(false);
     }
   };
 
@@ -199,6 +226,18 @@ export default function OrderDetailPage() {
                   {isCancelling ? "Cancelling..." : "Cancel Order"}
                 </Button>
               )}
+
+              {order.paymentStatus === "failed" &&
+                order.paymentMethod !== "cod" && (
+                  <Button
+                    type="button"
+                    disabled={isRetryingPayment}
+                    onClick={handleRetryPayment}
+                    className="rounded-xl text-xs font-bold uppercase tracking-wider px-4 h-9 shadow-sm bg-[#4c6a46] hover:bg-[#3d5538] text-white transition-all"
+                  >
+                    {isRetryingPayment ? "Restarting..." : "Retry Payment"}
+                  </Button>
+                )}
 
               <span
                 className={`text-xs font-bold uppercase tracking-wider border rounded-xl px-3 py-1 ${

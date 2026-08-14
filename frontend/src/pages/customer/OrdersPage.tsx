@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
+import { isAxiosError } from "axios";
 import { Inbox } from "lucide-react";
 import { getOrders } from "@/services/order.service";
+import { createPaymentIntent } from "@/services/payment.service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import OrderCard from "@/components/OrderCard";
 import { type Order } from "@/types/order";
+import { toast } from "sonner";
 
 // interface Order {
 //   orderId: number;
@@ -30,6 +33,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -37,6 +41,7 @@ export default function OrdersPage() {
         setLoading(true);
 
         const resData = await getOrders();
+        console.log("Order Data:", resData.data);
 
         if (resData.success && resData.data) {
           // Extract the nested orders array directly from the shape: resData.data.orders
@@ -74,8 +79,37 @@ export default function OrdersPage() {
         return orders.filter((o) => o.status === "completed");
       case "cancelled":
         return orders.filter((o) => o.status === "cancelled");
+      case "failed":
+        return orders.filter((o) => o.paymentStatus === "failed");
       default:
         return orders;
+    }
+  };
+
+  const handleRetryPayment = async (
+    orderId: number,
+    paymentMethod: Order["paymentMethod"],
+  ) => {
+    if (paymentMethod === "cod") {
+      toast.error("Cash on delivery orders cannot be retried online.");
+      return;
+    }
+
+    setRetrying(true);
+    try {
+      const intentResponse = await createPaymentIntent(orderId, paymentMethod);
+      if (intentResponse.data?.checkout_url) {
+        window.location.href = intentResponse.data.checkout_url;
+      } else {
+        toast.error("Could not restart payment. Please try again.");
+      }
+    } catch (err: unknown) {
+      const errorMessage = isAxiosError<{ message?: string }>(err)
+        ? err.response?.data?.message
+        : undefined;
+      toast.error(errorMessage || "Failed to retry payment.");
+    } finally {
+      setRetrying(false);
     }
   };
 
@@ -142,10 +176,16 @@ export default function OrdersPage() {
             >
               Cancelled
             </TabsTrigger>
+            <TabsTrigger
+              value="failed"
+              className="data-[state=active]:bg-[#2d4029] data-[state=active]:text-white rounded-lg text-xs font-bold px-4 py-2 uppercase tracking-wide"
+            >
+              Failed
+            </TabsTrigger>
           </TabsList>
 
           {/* Render target loops blocks */}
-          {["all", "pending", "confirm", "ship", "completed", "cancelled"].map(
+          {["all", "pending", "confirm", "ship", "completed", "cancelled", "failed"].map(
             (tabKey) => {
               const displayList = filterOrdersByStatus(tabKey);
 
@@ -187,7 +227,12 @@ export default function OrdersPage() {
                   ) : (
                     <div className="space-y-4">
                       {displayList.map((order) => (
-                        <OrderCard key={order.orderId} order={order} />
+                        <OrderCard
+                          key={order.orderId}
+                          order={order}
+                          onRetryPayment={handleRetryPayment}
+                          retrying={retrying}
+                        />
                       ))}
                     </div>
                   )}

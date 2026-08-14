@@ -14,8 +14,10 @@ const verifySignature = (
   const parts = Object.fromEntries(
     signatureHeader
       .split(",")
-      .map((pair) => pair.split("=") as [string, string]),
+      .map((pair) => pair.trim().split("=") as [string, string]),
   );
+
+  if (!parts.t || !secret) return false;
 
   const signedPayload = `${parts.t}.${rawBody}`;
 
@@ -27,11 +29,9 @@ const verifySignature = (
   const provided = parts.te || parts.li;
   if (!provided) return false;
 
-  console.log("expected:", expected);
-  console.log("provided:", provided);
-  console.log("secret used:", secret);
-
   try {
+    if (expected.length !== provided.length) return false;
+
     return crypto.timingSafeEqual(
       Buffer.from(expected, "hex"),
       Buffer.from(provided, "hex"),
@@ -49,15 +49,19 @@ router.post(
     const secret = process.env.PAYMONGO_WEBHOOK_SECRET!;
     const rawBody = req.body.toString();
 
-    console.log("=== WEBHOOK DEBUG ===");
-    console.log("signatureHeader:", signatureHeader);
-    console.log("secret (first 10 chars):", secret?.slice(0, 10));
-    console.log("secret length:", secret?.length);
-
     if (
       !signatureHeader ||
       !verifySignature(rawBody, signatureHeader, secret)
     ) {
+      console.error("Invalid PayMongo webhook signature", {
+        hasSignatureHeader: Boolean(signatureHeader),
+        signatureParts: signatureHeader
+          ? signatureHeader
+              .split(",")
+              .map((part) => part.trim().split("=")[0])
+          : [],
+        webhookSecretConfigured: Boolean(secret),
+      });
       return res.status(401).json({ error: "Invalid webhook signature" });
     }
 
@@ -102,12 +106,26 @@ router.post(
         }
         case "payment.failed": {
           const orderIdRaw = eventData.attributes.metadata?.order_id;
+          if (!orderIdRaw) {
+            console.error(
+              "payment.failed event missing order_id metadata",
+              eventId,
+            );
+            break;
+          }
           const orderId = Number(orderIdRaw);
-          await prisma.payment.update({
-            where: { orderId },
-            data: { status: "failed" },
-          });
-          await prisma.webhookEvent.create({ data: { eventId, eventType } });
+
+          await prisma.$transaction([
+            prisma.payment.update({
+              where: { orderId },
+              data: { status: "failed" },
+            }),
+            prisma.order.update({
+              where: { orderId },
+              data: { paymentStatus: "failed" },
+            }),
+            prisma.webhookEvent.create({ data: { eventId, eventType } }),
+          ]);
           break;
         }
         default:

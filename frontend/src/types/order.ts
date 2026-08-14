@@ -7,8 +7,13 @@ export type OrderStatus =
   | "cancelled";
 
 export type FulfillmentType = "pickup" | "delivery";
-export type PaymentMethod = "cod" | "paymongo";
-export type PaymentStatus = "unpaid" | "paid" | "pending" | "cancelled";
+export type PaymentMethod = "cod" | "gcash" | "card" | "paymongo";
+export type PaymentStatus =
+  | "unpaid"
+  | "paid"
+  | "pending"
+  | "failed"
+  | "cancelled";
 
 export interface OrderItem {
   quantity: number;

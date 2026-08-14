@@ -151,6 +151,11 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
       if (status) {
         whereClause.status = status;
       }
+
+      // Admin should not see (and therefore cannot confirm) orders where
+      // online payment hasn't actually succeeded. COD orders are exempt —
+      // "unpaid" is expected there since payment happens on delivery.
+      whereClause.OR = [{ paymentMethod: "cod" }, { paymentStatus: "paid" }];
     } else {
       whereClause.userId = uid;
 
@@ -239,18 +244,12 @@ export const getOrderById = async (
             quantity: true,
             priceAtOrder: true,
             product: {
-              select: {
-                name: true,
-                imageUrl: true,
-              },
+              select: { name: true, imageUrl: true },
             },
           },
         },
         payment: {
-          select: {
-            method: true,
-            status: true,
-          },
+          select: { method: true, status: true },
         },
       },
     });
@@ -594,11 +593,19 @@ export const cancelOrder = async (
     const completedCancellation = await prisma.order.update({
       where: whereClause,
       data: {
+        // 1. Update overall order status
         status: "cancelled",
+
+        // 2. Update summary field on the Order table directly
+        paymentStatus: "cancelled",
+
+        // 3. Update status on the related Payment record
         payment: {
-          // Changed back to 'update' because Prisma enforces a strict 1:1 relationship here
           update: {
-            status: "cancelled",
+            where: {}, // Safely targets the 1:1 related record
+            data: {
+              status: "cancelled",
+            },
           },
         },
       },

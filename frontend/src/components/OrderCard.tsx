@@ -33,9 +33,15 @@ import { type Order } from "@/types/order";
 
 interface OrderCardProps {
   order: Order;
+  onRetryPayment?: (orderId: number, paymentMethod: Order["paymentMethod"]) => void;
+  retrying?: boolean;
 }
 
-export default function OrderCard({ order }: OrderCardProps) {
+export default function OrderCard({
+  order,
+  onRetryPayment,
+  retrying = false,
+}: OrderCardProps) {
   const formattedDate = new Date(order.orderDate).toLocaleDateString(
     undefined,
     {
@@ -54,14 +60,15 @@ export default function OrderCard({ order }: OrderCardProps) {
     paid: "bg-green-50 text-green-700 border-green-100",
     pending: "bg-amber-50 text-amber-700 border-amber-100",
     unpaid: "bg-red-50 text-red-700 border-red-100",
+    failed: "bg-red-50 text-red-700 border-red-100",
     cancelled: "bg-red-50 text-red-700 border-red-100",
   };
 
   return (
-    <Link
-      to={`/orders/${order.orderId}`}
+    <div
       className="group block bg-white border border-gray-200/60 rounded-3xl p-5 sm:p-6 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 space-y-5"
     >
+      <Link to={`/orders/${order.orderId}`} className="block space-y-5">
       {/* Top Meta Info Area */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
         <div className="space-y-1">
@@ -149,6 +156,18 @@ export default function OrderCard({ order }: OrderCardProps) {
           variant="compact"
         />
       </div>
-    </Link>
+      </Link>
+
+      {order.paymentStatus === "failed" && onRetryPayment && (
+        <button
+          type="button"
+          onClick={() => onRetryPayment(order.orderId, order.paymentMethod)}
+          disabled={retrying}
+          className="w-full rounded-xl bg-[#4c6a46] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#3d5538] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {retrying ? "Restarting Payment..." : "Retry Payment"}
+        </button>
+      )}
+    </div>
   );
 }

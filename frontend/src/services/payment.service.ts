@@ -14,7 +14,7 @@ export interface PaymentIntentData {
 
 export const createPaymentIntent = async (
   orderId: number,
-  paymentMethod: "gcash" | "card",
+  paymentMethod: "gcash" | "card" | "paymongo",
 ): Promise<ApiResponse<PaymentIntentData>> => {
   try {
     const result = await api.post<ApiResponse<PaymentIntentData>>(

@@ -155,6 +155,31 @@ export default function PaymentResultPage() {
   }
 
   const isPaid = order.paymentStatus === "paid";
+  const isFailed = order.paymentStatus === "failed";
+
+  if (isFailed) {
+    return (
+      <div className="w-full min-h-[75vh] bg-[#faf8f4] flex items-center justify-center px-4 text-center">
+        <div className="max-w-md w-full bg-white border border-gray-200/60 rounded-3xl p-6 sm:p-8 shadow-sm">
+          <div className="w-16 h-16 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-5 border border-red-100">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+          <h2 className="font-serif font-bold text-2xl text-[#2d4029] mb-2">
+            Payment Failed
+          </h2>
+          <p className="text-xs text-gray-400 font-medium leading-relaxed mb-6">
+            Your payment for Order #{order.orderId} did not go through. You can
+            retry from your Orders page.
+          </p>
+          <Button
+            nativeButton={false}
+            className="bg-[#4c6a46] hover:bg-[#3d5538] text-white rounded-xl shadow-md font-semibold px-6"
+            render={<Link to="/orders">Go to your orders</Link>}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-[75vh] bg-[#faf8f4] flex items-center justify-center py-12 px-4">
