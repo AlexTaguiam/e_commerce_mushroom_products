@@ -4,7 +4,8 @@ export type OrderStatus =
   | "ready"
   | "out_for_delivery"
   | "completed"
-  | "cancelled";
+  | "cancelled"
+  | "needs_review";
 
 export type FulfillmentType = "pickup" | "delivery";
 export type PaymentMethod = "cod" | "gcash" | "card" | "paymongo";

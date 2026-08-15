@@ -32,3 +32,41 @@ export const createPaymentIntentSchema = z.object({
 export type CreatePaymentIntentBody = z.infer<
   typeof createPaymentIntentSchema
 >["body"];
+
+export const createIntentForCartSchema = z.object({
+  body: z
+    .object({
+      fulfillmentType: z.enum(["delivery", "pickup"]),
+      deliveryAddress: z.string().optional().transform((value) =>
+        value?.trim() === "" ? undefined : value?.trim(),
+      ),
+      contactPhone: z
+        .string()
+        .regex(/^\+?[0-9]{7,15}$/, "contactPhone must be a valid phone number"),
+      paymentMethod: z.enum(["gcash", "card"]),
+      items: z
+        .array(
+          z
+            .object({
+              productId: z.number().int().positive(),
+              quantity: z.number().int().positive(),
+            })
+            .strict(),
+        )
+        .min(1, "items cannot be empty — add at least one product"),
+    })
+    .strict()
+    .superRefine((data, ctx) => {
+      if (data.fulfillmentType === "delivery" && !data.deliveryAddress) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["deliveryAddress"],
+          message: "deliveryAddress is required when fulfillmentType is delivery",
+        });
+      }
+    }),
+});
+
+export type CreateIntentForCartBody = z.infer<
+  typeof createIntentForCartSchema
+>["body"];

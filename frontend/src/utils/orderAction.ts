@@ -27,7 +27,7 @@ export function getOrderActions(order: Order): ActionConfig {
   const { status, fulfillmentType } = order;
 
   // Terminal states allow no further transitions
-  if (status === "completed" || status === "cancelled") {
+  if (status === "completed" || status === "cancelled" || status === "needs_review") {
     return { primaryAction: null, canCancel: false };
   }
 
@@ -125,6 +125,11 @@ export function getStatusBadgeConfig(status: OrderStatus) {
       return {
         label: "Cancelled",
         className: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+      };
+    case "needs_review":
+      return {
+        label: "Needs Review",
+        className: "bg-amber-500/10 text-amber-400 border-amber-500/20",
       };
   }
 }

@@ -28,3 +28,31 @@ export const createPaymentIntent = async (
     throw error;
   }
 };
+
+export const createIntentForCart = async (payload: {
+  fulfillmentType: string;
+  deliveryAddress?: string;
+  contactPhone: string;
+  paymentMethod: "gcash" | "card";
+  items: Array<{ productId: number; quantity: number }>;
+}): Promise<ApiResponse<PaymentIntentData>> => {
+  const result = await api.post<ApiResponse<PaymentIntentData>>(
+    "payments/create-intent-for-cart",
+    payload,
+  );
+  return result.data;
+};
+
+export type CartPaymentStatus =
+  | { status: "paid"; orderId: number }
+  | { status: "processing" }
+  | { status: "failed" };
+
+export const getCartPaymentStatus = async (
+  paymentIntentId: string,
+): Promise<ApiResponse<CartPaymentStatus>> => {
+  const result = await api.get<ApiResponse<CartPaymentStatus>>(
+    `payments/status/${paymentIntentId}`,
+  );
+  return result.data;
+};

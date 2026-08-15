@@ -31,17 +31,9 @@ import { type Order } from "@/types/order";
 //   orderItems: OrderItem[];
 // }
 
-interface OrderCardProps {
-  order: Order;
-  onRetryPayment?: (orderId: number, paymentMethod: Order["paymentMethod"]) => void;
-  retrying?: boolean;
-}
+interface OrderCardProps { order: Order; }
 
-export default function OrderCard({
-  order,
-  onRetryPayment,
-  retrying = false,
-}: OrderCardProps) {
+export default function OrderCard({ order }: OrderCardProps) {
   const formattedDate = new Date(order.orderDate).toLocaleDateString(
     undefined,
     {
@@ -158,16 +150,6 @@ export default function OrderCard({
       </div>
       </Link>
 
-      {order.paymentStatus === "failed" && onRetryPayment && (
-        <button
-          type="button"
-          onClick={() => onRetryPayment(order.orderId, order.paymentMethod)}
-          disabled={retrying}
-          className="w-full rounded-xl bg-[#4c6a46] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#3d5538] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {retrying ? "Restarting Payment..." : "Retry Payment"}
-        </button>
-      )}
     </div>
   );
 }

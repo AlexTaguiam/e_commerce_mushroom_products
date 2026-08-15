@@ -15,7 +15,8 @@ type OrderStatus =
   | "ready"
   | "out_for_delivery"
   | "completed"
-  | "cancelled";
+  | "cancelled"
+  | "needs_review";
 
 interface StepTrackerProps {
   fulfillmentType: FulfillmentType;
@@ -48,6 +49,20 @@ export default function StepTracker({
           <p className="text-[11px] text-red-600 font-medium">
             This transaction pipeline was halted and voided.
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "needs_review") {
+    return (
+      <div className="w-full bg-amber-50/60 border border-amber-100 rounded-2xl p-4 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+          <RotateCwFadingClock className="w-4 h-4" />
+        </div>
+        <div>
+          <h4 className="text-xs font-bold text-amber-800 uppercase tracking-wide">Order Under Review</h4>
+          <p className="text-[11px] text-amber-700 font-medium">Your payment was received and the order needs staff review.</p>
         </div>
       </div>
     );

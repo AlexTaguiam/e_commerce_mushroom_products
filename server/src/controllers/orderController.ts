@@ -76,6 +76,7 @@ export const createOrder = async (
               ? deliveryAddress || databaseUser.address || ""
               : null,
           paymentMethod: paymentMethod,
+          // Need to update the logic of payment
           paymentStatus: "unpaid",
 
           orderItems: {

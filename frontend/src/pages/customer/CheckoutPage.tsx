@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -13,14 +14,13 @@ import {
 import { toast } from "sonner";
 import { useCart } from "@/context/cartContext";
 import { createOrder } from "@/services/order.service";
-import { createPaymentIntent } from "@/services/payment.service";
+import { createIntentForCart } from "@/services/payment.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import OrderSuccessScreen from "@/components/checkout/OrderSuccessScreen";
 import { type CartItem } from "@/types/cart";
-import { type OrderReturnData } from "@/services/order.service";
 import { type CreateOrderPayload } from "@/services/order.service";
 
 interface FormValidationErrors {
@@ -44,7 +44,7 @@ export default function CheckoutPage() {
 
   const [errors, setErrors] = useState<FormValidationErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const [placedOrder, setPlacedOrder] = useState<any | null>(null);
 
   // Client Validation Engine
@@ -74,8 +74,7 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
 
-    // Structural conversion matching back-end signature targets
-    // Clean payload structure matching backend schema
+    // COD keeps the existing order-first checkout path.
     const payload: CreateOrderPayload = {
       fulfillmentType,
       contactPhone: contactPhone.trim(),
@@ -93,65 +92,54 @@ export default function CheckoutPage() {
 
     console.log("payload: ", payload);
 
-    let createdOrder: OrderReturnData;
+    if (paymentMethod === "cod") {
+      try {
+        const orderResponse = await createOrder(payload);
+        console.log("OrderResponse:", orderResponse);
+        if (!orderResponse.success || !orderResponse.data) {
+          throw new Error(
+            orderResponse.message ||
+              "Failed to initialize order instance allocations.",
+          );
+        }
+        clearCart();
+        setPlacedOrder(orderResponse.data);
+        toast.success("Your balance structure configuration cleared.");
+      } catch (error: any) {
+        console.error("Order pipeline submission collision tracking:", error);
+        toast.error(
+          error.response?.data?.message ||
+            error.message ||
+            "System fault runtime processing error.",
+        );
+        setIsSubmitting(false);
+      }
+      return;
+    }
 
     try {
-      // Step 1: Initialize Database Order Transaction Frame
-      const orderResponse = await createOrder(payload);
-      console.log("OrderResponse:", orderResponse);
-
-      if (!orderResponse.success || !orderResponse.data) {
-        throw new Error(
-          orderResponse.message ||
-            "Failed to initialize order instance allocations.",
-        );
-      }
-
-      createdOrder = orderResponse.data;
-
-      console.log("Method", paymentMethod);
-
-      // Step 2: Branch Execution Pathways Based on Payment Methods
-      if (paymentMethod === "cod") {
+      const intentResponse = await createIntentForCart({
+        fulfillmentType,
+        deliveryAddress:
+          fulfillmentType === "delivery" ? deliveryAddress : undefined,
+        contactPhone,
+        paymentMethod,
+        items: cartItems.map((item: CartItem) => ({
+          productId: Number(item.productId),
+          quantity: Number(item.quantity),
+        })),
+      });
+      if (intentResponse.data?.checkout_url) {
         clearCart();
-        setPlacedOrder(createdOrder);
-        toast.success("Your balance structure configuration cleared.");
+        window.location.href = intentResponse.data.checkout_url;
       } else {
-        // PayMongo Hosted Gateway Routine Check (Handles GCash & Card)
-        console.log("Paymongo gateway method triggered:", paymentMethod);
-        try {
-          const intentResponse = await createPaymentIntent(
-            Number(createdOrder.orderId),
-            paymentMethod,
-          );
-
-          if (intentResponse.data?.checkout_url) {
-            clearCart();
-            window.location.href = intentResponse.data.checkout_url;
-          } else {
-            throw new Error(
-              "Missing payment redirection routing links context.",
-            );
-          }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (intentError: any) {
-          console.error(
-            "Intent generation failure state details:",
-            intentError,
-          );
-          toast.error(
-            `Your order #${createdOrder.orderId} was created, but initialization with PayMongo failed. Please visit your Orders panel to re-try payment clearance.`,
-          );
-          setIsSubmitting(false);
-        }
+        throw new Error("Missing payment redirection routing links context.");
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error("Order pipeline submission collision tracking:", error);
+    } catch (intentError: any) {
+      console.error("Intent generation failure state details:", intentError);
       toast.error(
-        error.response?.data?.message ||
-          error.message ||
-          "System fault runtime processing error.",
+        intentError.response?.data?.message ||
+          "Could not start payment. Please try again.",
       );
       setIsSubmitting(false);
     }

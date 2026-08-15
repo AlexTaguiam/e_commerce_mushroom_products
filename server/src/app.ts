@@ -12,6 +12,7 @@ import contactRoutes from "./routes/contactRoutes";
 import paymentRoutes from "./routes/paymentsRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import { globalLimiter } from "./middleware/rateLimiter";
+import { schedulePendingCheckoutCleanup } from "./jobs/pendingCheckoutCleanup";
 
 dotenv.config();
 
@@ -62,4 +63,5 @@ app.use("/api/dashboard", dashboardRoutes);
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 const PORT = process.env.PORT || 5000;
+schedulePendingCheckoutCleanup();
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

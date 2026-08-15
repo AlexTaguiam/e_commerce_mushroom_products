@@ -133,3 +133,150 @@ export const createPaymentIntent = async (
     return;
   }
 };
+
+export const createIntentForCart = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  const {
+    fulfillmentType,
+    deliveryAddress,
+    contactPhone,
+    paymentMethod,
+    items,
+  } = req.body;
+  const uid = req.user!.uid;
+
+  try {
+    let computedTotalAmount = 0;
+
+    for (const item of items) {
+      const product = await prisma.product.findUnique({
+        where: { productId: item.productId },
+      });
+
+      if (!product) {
+        sendResponse(res, 400, `Product #${item.productId} was not found`);
+        return;
+      }
+
+      if (product.status !== "active") {
+        sendResponse(res, 400, `${product.name} is not currently available`);
+        return;
+      }
+
+      if (product.stockQuantity < item.quantity) {
+        sendResponse(res, 400, `Insufficient stock for ${product.name}`);
+        return;
+      }
+
+      computedTotalAmount += Number(product.price) * item.quantity;
+    }
+
+    const databaseUser = await prisma.user.findUnique({
+      where: { firebaseUid: uid },
+    });
+    if (!databaseUser) {
+      sendResponse(res, 404, "Not Found: User record could not be resolved.");
+      return;
+    }
+
+    const amountInCentavos = Math.round(computedTotalAmount * 100);
+    const { data: intentRes } = await paymongo.post("/payment_intents", {
+      data: {
+        attributes: {
+          amount: amountInCentavos,
+          currency: "PHP",
+          payment_method_allowed: [paymentMethod],
+          capture_type: "automatic",
+          metadata: { pending: "true" },
+        },
+      },
+    });
+    const paymentIntent = intentRes.data;
+
+    const { data: methodRes } = await paymongo.post("/payment_methods", {
+      data: { attributes: { type: paymentMethod } },
+    });
+    const paymentMethodRecord = methodRes.data;
+
+    const { data: attachRes } = await paymongo.post(
+      `/payment_intents/${paymentIntent.id}/attach`,
+      {
+        data: {
+          attributes: {
+            payment_method: paymentMethodRecord.id,
+            return_url: `${process.env.CLIENT_URL}/payment-result/${paymentIntent.id}`,
+          },
+        },
+      },
+    );
+
+    await prisma.pendingCheckout.create({
+      data: {
+        paymentIntentId: paymentIntent.id,
+        userId: databaseUser.firebaseUid,
+        contactPhone,
+        fulfillmentType,
+        deliveryAddress:
+          fulfillmentType === "delivery"
+            ? deliveryAddress || databaseUser.address || ""
+            : null,
+        paymentMethod,
+        totalAmount: computedTotalAmount,
+        cartItemsJson: JSON.stringify(items),
+      },
+    });
+
+    sendResponse(res, 200, "Payment session initialized successfully", {
+      checkout_url: attachRes.data.attributes.next_action?.redirect?.url,
+      payment_intent_id: paymentIntent.id,
+    });
+  } catch (error: any) {
+    console.error(
+      "createIntentForCart error:",
+      error.response?.data || error.message,
+    );
+    sendResponse(res, 500, "Failed to create payment intent");
+  }
+};
+
+export const getPaymentStatus = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  const paymentIntentId = Array.isArray(req.params.paymentIntentId)
+    ? req.params.paymentIntentId[0]
+    : req.params.paymentIntentId;
+  const uid = req.user!.uid;
+
+  try {
+    const payment = await prisma.payment.findUnique({
+      where: { transactionRef: paymentIntentId },
+      include: { order: { select: { orderId: true, userId: true } } },
+    });
+
+    if (payment?.order.userId === uid) {
+      sendResponse(res, 200, "Payment status retrieved", {
+        status: "paid",
+        orderId: payment.order.orderId,
+      });
+      return;
+    }
+
+    const pending = await prisma.pendingCheckout.findFirst({
+      where: { paymentIntentId, userId: uid },
+    });
+    if (pending) {
+      sendResponse(res, 200, "Payment is still processing", {
+        status: "processing",
+      });
+      return;
+    }
+
+    sendResponse(res, 200, "Payment did not complete", { status: "failed" });
+  } catch (error: any) {
+    console.error("getPaymentStatus error:", error.message || error);
+    sendResponse(res, 500, "Failed to retrieve payment status");
+  }
+};
