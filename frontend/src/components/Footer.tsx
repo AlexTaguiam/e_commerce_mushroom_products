@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Truck, ShieldCheck, Thermometer, Sprout, Send } from "lucide-react";
+import logo from "@/assets/Logo.png";
 
 function FacebookIcon() {
   return (
@@ -101,13 +102,13 @@ export default function Footer() {
           {/* COLUMN 1: BRAND LOGO BLOCK */}
           <div className="lg:col-span-4 space-y-5">
             <Link to="/" className="flex items-center gap-3 group w-max">
-              <div className="w-10 h-10 bg-[#4c6a46] rounded-xl flex items-center justify-center shadow-md shadow-[#4c6a46]/10 transition-transform group-hover:scale-105">
+              <div className="w-10 h-10 bg-[#faf8f4] rounded-xl flex items-center justify-center shadow-md shadow-[#4c6a46]/10 transition-transform group-hover:scale-105">
                 <span className="text-white font-serif text-xl font-bold">
-                  M
+                  <img src={logo} alt=" b&J logo" />
                 </span>
               </div>
               <span className="font-serif font-bold text-xl text-[#2d4029] tracking-wide transition-colors group-hover:text-[#4c6a46]">
-                Alhona Mushrooms
+                B&J Mushroom Products
               </span>
             </Link>
             <p className="text-sm text-gray-600 font-medium leading-relaxed max-w-sm">
@@ -117,7 +118,7 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-3 pt-2">
               <a
-                href="#"
+                href="https://www.facebook.com/share/1Bmfp87yNE/"
                 className="w-9 h-9 bg-white hover:bg-[#4c6a46]/10 text-gray-500 hover:text-[#4c6a46] border border-gray-200 rounded-full flex items-center justify-center transition-all shadow-sm"
               >
                 <FacebookIcon />

@@ -77,7 +77,7 @@ export default function FeaturedProducts() {
           </div>
 
           <Link
-            to="/products"
+            to="/catalog"
             className="inline-flex items-center gap-1 text-sm font-semibold text-[#4c6a46] hover:text-[#3d5538] border-b border-[#4c6a46]/20 hover:border-[#3d5538] pb-0.5 transition-all self-start sm:self-auto group"
           >
             <span>View Full Catalog</span>

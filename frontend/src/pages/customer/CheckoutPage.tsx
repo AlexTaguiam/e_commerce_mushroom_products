@@ -6,7 +6,7 @@ import {
   Store,
   Banknote,
   Smartphone,
-  CreditCard,
+  // CreditCard,
   ShoppingBag,
   Loader2,
   ArrowLeft,
@@ -289,7 +289,7 @@ export default function CheckoutPage() {
               <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
                 <Label
                   htmlFor="address-input"
-                  className="text-xs font-bold uppercase tracking-wider text-[#2d4029]"
+                  className="text-xs font-bold uppercase tracking-wider text-[#4c6a46]"
                 >
                   Shipping Destination Address
                 </Label>
@@ -299,7 +299,7 @@ export default function CheckoutPage() {
                   placeholder="Street Name, Barangay, City, Province"
                   value={deliveryAddress}
                   onChange={(e) => setDeliveryAddress(e.target.value)}
-                  className={`rounded-xl text-xs h-10 border-gray-200 focus-visible:ring-[#4c6a46] ${
+                  className={`rounded-xl text-xs h-10 text-[#4c6a46] border-gray-200 focus-visible:ring-[#4c6a46] ${
                     errors.deliveryAddress
                       ? "border-red-300 focus-visible:ring-red-400"
                       : ""
@@ -327,7 +327,7 @@ export default function CheckoutPage() {
                 placeholder="0917XXXXXXX or +63XXXXXXXXX"
                 value={contactPhone}
                 onChange={(e) => setContactPhone(e.target.value)}
-                className={`rounded-xl text-xs h-10 border-gray-200 focus-visible:ring-[#4c6a46] ${
+                className={`rounded-xl text-xs h-10 border-gray-200 text-[#4c6a46] focus-visible:ring-[#4c6a46] ${
                   errors.contactPhone
                     ? "border-red-300 focus-visible:ring-red-400"
                     : ""
@@ -409,7 +409,7 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Option C: Credit / Debit Card */}
-                <div>
+                {/* <div>
                   <RadioGroupItem
                     value="card"
                     id="pay-card"
@@ -435,7 +435,7 @@ export default function CheckoutPage() {
                       </span>
                     </div>
                   </Label>
-                </div>
+                </div> */}
               </RadioGroup>
             </div>
           </div>

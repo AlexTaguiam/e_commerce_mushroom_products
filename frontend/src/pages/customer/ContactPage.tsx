@@ -1,10 +1,10 @@
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
+import background from "@/assets/bg2.jpg";
 
 // Validated Tuguegarao City Google Maps string value. Swap out when precise farm metrics settle.
 const GOOGLE_MAPS_EMBED_SRC =
-  "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d60795.83607074747!2d121.68882068471192!3d17.61517406982443!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3387702f23b7b379%3A0xb3de43666fcfb335!2sTuguegarao%20City%2C%20Cagayan!5e0!3m2!1sen!2sph!4v1710000000000!5m2!1sen!2sph";
-
+  "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d964.123456789!2d121.887543!3d17.8770515!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3385ebce12aeeab3%3A0xa06ff1bff34636aa!2sBNJ%20Mushroom%20Products!5e0!3m2!1sen!2sph!4v1710000000000!5m2!1sen!2sph";
 export default function ContactPage() {
   return (
     <div className="w-full min-h-screen bg-[#faf8f4] font-sans antialiased flex flex-col">
@@ -12,7 +12,7 @@ export default function ContactPage() {
       <div className="relative w-full h-80 sm:h-100 bg-gray-900 overflow-hidden flex items-center justify-center">
         {/* Placeholder background nature image asset */}
         <img
-          src="https://images.unsplash.com/photo-1535254973040-607b474cb50d?auto=format&fit=crop&q=80&w=2000"
+          src={background}
           alt="Mushroom cultivation facility background"
           className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none brightness-95"
         />
@@ -29,8 +29,9 @@ export default function ContactPage() {
           </h1>
           <div className="w-16 h-1 bg-[#4c6a46] mx-auto mb-4 rounded-full" />
           <p className="text-sm sm:text-base text-gray-200 max-w-xl mx-auto font-medium leading-relaxed">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit
-            tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.
+            Have questions about our premium mushroom products? We're here to
+            help! Reach out to learn more about our organic, sustainably grown
+            mushrooms and wholesale opportunities.
           </p>
         </div>
       </div>
@@ -45,11 +46,11 @@ export default function ContactPage() {
               <Phone className="w-5 h-5" />
             </div>
             <h3 className="font-serif font-bold text-lg text-[#2d4029] mb-2">
-              (+654) 764 7654
+              (+63) 965 1107 981
             </h3>
             <p className="text-xs sm:text-sm text-gray-400 font-medium leading-relaxed mb-4">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit
-              tellus.
+              Call us for inquiries about product orders, bulk purchases, or
+              partnership opportunities.
             </p>
             <span className="text-xs font-bold text-[#4c6a46] group-hover:underline cursor-pointer mt-auto">
               Learn More
@@ -62,11 +63,11 @@ export default function ContactPage() {
               <Mail className="w-5 h-5" />
             </div>
             <h3 className="font-serif font-bold text-lg text-[#faf8f4] mb-2">
-              mail@lawnc.com
+              taguaimjohnalex@gmail.com
             </h3>
             <p className="text-xs sm:text-sm text-gray-300/80 font-medium leading-relaxed mb-4">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit
-              tellus.
+              Email us anytime with your questions or inquiries. We'll respond
+              within 24 hours.
             </p>
             <span className="text-xs font-bold text-[#faf8f4] group-hover:underline cursor-pointer mt-auto">
               Learn More
@@ -79,11 +80,11 @@ export default function ContactPage() {
               <MapPin className="w-5 h-5" />
             </div>
             <h3 className="font-serif font-bold text-lg text-[#2d4029] mb-2">
-              London Eye, UK
+              Tuguegarao City, Cagayan
             </h3>
             <p className="text-xs sm:text-sm text-gray-400 font-medium leading-relaxed mb-4">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit
-              tellus.
+              Visit our state-of-the-art mushroom cultivation facility in the
+              heart of Cagayan Valley.
             </p>
             <span className="text-xs font-bold text-[#4c6a46] group-hover:underline cursor-pointer mt-auto">
               Learn More
@@ -102,27 +103,28 @@ export default function ContactPage() {
                   TIMINGS
                 </span>
                 <h2 className="font-serif font-bold text-2xl sm:text-3xl text-[#2d4029]">
-                  Our Working Time
+                  Our Working Hours
                 </h2>
               </div>
               <p className="text-xs sm:text-sm text-gray-500 font-medium leading-relaxed">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit
-                tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.
+                We're open year-round to serve your mushroom product needs.
+                Visit our farm or office during business hours to learn about
+                our growing process and product lineup.
               </p>
 
               {/* Timing Node Lists */}
               <div className="space-y-3 pt-2 text-sm text-gray-600 font-semibold">
                 <div className="flex items-center gap-3">
                   <Clock className="w-4 h-4 text-[#4c6a46] shrink-0" />
-                  <span>Monday – Friday : 7AM – 5PM</span>
+                  <span>Monday – Friday : 8AM – 6PM</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Clock className="w-4 h-4 text-[#4c6a46] shrink-0" />
-                  <span>Saturday : 9AM – 2PM</span>
+                  <span>Saturday : 9AM – 3PM</span>
                 </div>
                 <div className="flex items-center gap-3 text-gray-400 font-normal">
                   <span className="text-red-500 font-bold">✕</span>
-                  <span>Sunday (Holiday)</span>
+                  <span>Sunday (Closed)</span>
                 </div>
               </div>
             </div>
@@ -134,7 +136,7 @@ export default function ContactPage() {
               </h4>
               <div className="w-full h-70 sm:h-80 rounded-3xl overflow-hidden border border-gray-200/60 shadow-xl shadow-[#2d4029]/4 bg-white p-1.5 group">
                 <iframe
-                  title="Business Production Facility Space Coordinates Map"
+                  title="BNJ Mushroom Products Facility Location Map"
                   src={GOOGLE_MAPS_EMBED_SRC}
                   className="w-full h-full rounded-2xl border-0 transition-all duration-300 group-hover:contrast-105"
                   allowFullScreen={false}
@@ -152,7 +154,7 @@ export default function ContactPage() {
                 ONLINE DESK
               </span>
               <h2 className="font-serif font-bold text-3xl sm:text-4xl text-[#2d4029]">
-                Get In Touch !
+                Send us a Message
               </h2>
             </div>
 

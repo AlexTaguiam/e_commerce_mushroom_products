@@ -103,7 +103,7 @@ export default function ContactForm() {
           placeholder="Enter your name"
           value={formData.name}
           onChange={handleInputChange}
-          className={`rounded-xl border-gray-200 focus-visible:ring-[#4c6a46] bg-[#faf8f4]/30 h-11 ${errors.name ? "border-red-400 focus-visible:ring-red-400" : ""}`}
+          className={`rounded-xl border-gray-200 focus-visible:ring-[#4c6a46] bg-[#faf8f4]/30 h-11 text-[#2d4029] placeholder:text-gray-400 ${errors.name ? "border-red-400 focus-visible:ring-red-400" : ""}`}
         />
         {errors.name && (
           <p className="text-xs font-medium text-red-500 mt-1">{errors.name}</p>
@@ -120,7 +120,7 @@ export default function ContactForm() {
           placeholder="you@example.com"
           value={formData.email}
           onChange={handleInputChange}
-          className={`rounded-xl border-gray-200 focus-visible:ring-[#4c6a46] bg-[#faf8f4]/30 h-11 ${errors.email ? "border-red-400 focus-visible:ring-red-400" : ""}`}
+          className={`rounded-xl border-gray-200 focus-visible:ring-[#4c6a46] bg-[#faf8f4]/30 h-11 text-[#2d4029] placeholder:text-gray-400 ${errors.email ? "border-red-400 focus-visible:ring-red-400" : ""}`}
         />
         {errors.email && (
           <p className="text-xs font-medium text-red-500 mt-1">
@@ -139,7 +139,7 @@ export default function ContactForm() {
           placeholder="e.g., 09123456789"
           value={formData.phone}
           onChange={handleInputChange}
-          className="rounded-xl border-gray-200 focus-visible:ring-[#4c6a46] bg-[#faf8f4]/30 h-11"
+          className="rounded-xl border-gray-200 focus-visible:ring-[#4c6a46] bg-[#faf8f4]/30 h-11 text-[#2d4029] placeholder:text-gray-400"
         />
       </div>
 
@@ -156,7 +156,7 @@ export default function ContactForm() {
           placeholder="How can we help you? Share your inquiries..."
           value={formData.message}
           onChange={handleInputChange}
-          className={`rounded-xl border-gray-200 focus-visible:ring-[#4c6a46] bg-[#faf8f4]/30 resize-none ${errors.message ? "border-red-400 focus-visible:ring-red-400" : ""}`}
+          className={`rounded-xl border-gray-200 focus-visible:ring-[#4c6a46] bg-[#faf8f4]/30 resize-none text-[#2d4029] placeholder:text-gray-400 ${errors.message ? "border-red-400 focus-visible:ring-red-400" : ""}`}
         />
         {errors.message && (
           <p className="text-xs font-medium text-red-500 mt-1">

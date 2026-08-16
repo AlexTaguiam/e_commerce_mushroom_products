@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCart } from "@/context/cartContext";
+import logo from "@/assets/Logo.png";
 
 export default function Navbar() {
   const { user, profile, role, loading, logout } = useAuth();
@@ -67,9 +68,9 @@ export default function Navbar() {
           {/* BRAND LOGO AREA */}
           <div className="flex items-center gap-20">
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 bg-[#4c6a46] rounded-xl flex items-center justify-center shadow-md shadow-[#4c6a46]/10 transition-transform group-hover:scale-105">
+              <div className="w-10 h-10 bg-[#faf8f4] rounded-xl flex items-center justify-center shadow-md shadow-[#4c6a46]/10 transition-transform group-hover:scale-105">
                 <span className="text-white font-serif text-xl font-bold">
-                  M
+                  <img src={logo} alt=" b&J logo" />
                 </span>
               </div>
               <span className="font-serif font-bold text-xl text-[#2d4029] tracking-wide transition-colors group-hover:text-[#4c6a46]">
