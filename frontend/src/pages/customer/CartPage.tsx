@@ -57,7 +57,7 @@ export default function CartPage() {
           to your catalog bucket yet.
         </p>
         <Button className="bg-[#4c6a46] hover:bg-[#3d5538] text-white font-semibold rounded-xl px-6 h-11 shadow-md transition-all tracking-wide">
-          <Link to="/shop">Continue Shopping</Link>
+          <Link to="/catalog">Continue Shopping</Link>
         </Button>
       </div>
     );
