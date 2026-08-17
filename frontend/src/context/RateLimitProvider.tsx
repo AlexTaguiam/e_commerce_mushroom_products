@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, type ReactNode } from "react";
 import api, { adminApi } from "@/api/client"; // 👈 Import both API instances (or rename 'customerApi' to match your export)
-import { RateLimitContext } from "./RateLimitContext";
+import { RateLimitContext } from "./rateLimitContext";
 
 export const RateLimitProvider = ({ children }: { children: ReactNode }) => {
   const [retryAfter, setRetryAfter] = useState<number>(0);

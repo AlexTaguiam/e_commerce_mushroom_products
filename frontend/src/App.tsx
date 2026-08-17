@@ -7,7 +7,7 @@ import Footer from "./components/Footer";
 import { Toaster } from "sonner";
 import { killAllScrollTriggers } from "./utils/scrollTriggerCleanup";
 import { CartProvider } from "./context/CartProvider";
-import { RateLimitProvider } from "./context/rateLimitProvider";
+import { RateLimitProvider } from "./context/RateLimitProvider";
 import { RateLimitNotice } from "./components/RateLimitNotice";
 
 function AppShell() {
