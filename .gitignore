@@ -25,6 +25,7 @@ web_modules/
 !firebase.json
 !package.json
 !tsconfig.json
+!tsconfig.*.json
 
 # ==============================================================================
 # Production / Build Output
