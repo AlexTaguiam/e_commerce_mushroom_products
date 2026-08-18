@@ -26,6 +26,7 @@ web_modules/
 !package.json
 !tsconfig.json
 !tsconfig.*.json
+!vercel.json
 
 # ==============================================================================
 # Production / Build Output
