@@ -1,5 +1,5 @@
 import React from "react";
-import { useRateLimit } from "../context/RateLimitContext";
+import { useRateLimit } from "../context/rateLimitContext";
 
 export const RateLimitNotice: React.FC = () => {
   const { isRateLimited, retryAfter } = useRateLimit();
