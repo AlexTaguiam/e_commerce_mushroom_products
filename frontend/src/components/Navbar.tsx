@@ -15,6 +15,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCart } from "@/context/cartContext";
 import logo from "@/assets/Logo.png";
+import { createPortal } from "react-dom";
 
 export default function Navbar() {
   const { user, profile, role, loading, logout } = useAuth();
@@ -244,116 +245,119 @@ export default function Navbar() {
             </button>
 
             {/* Custom Safe Mobile Side Drawer */}
-            {isMobileOpen && (
-              <div className="fixed inset-0 z-50 md:hidden">
-                {/* Backdrop Overlay */}
-                <div
-                  className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity"
-                  onClick={() => setIsMobileOpen(false)}
-                />
+            {isMobileOpen &&
+              createPortal(
+                <div className="fixed inset-0 z-9999 isolate md:hidden">
+                  <div
+                    className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+                    onClick={() => setIsMobileOpen(false)}
+                  />
 
-                {/* Drawer Body Panel */}
-                <div className="fixed inset-y-0 right-0 w-75 bg-[#faf8f4] border-l border-gray-200 p-6 flex flex-col justify-between font-sans shadow-2xl transition-transform transform translate-x-0">
-                  <div className="space-y-8">
-                    <div className="flex items-center justify-between">
-                      <div className="font-serif font-bold text-xl text-[#2d4029] flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-[#4c6a46] rounded-lg flex items-center justify-center text-white text-sm font-bold font-serif">
-                          M
+                  <div className="fixed inset-y-0 right-0 z-10 flex w-80 flex-col justify-between border-l border-gray-200 bg-[#faf8f4]! p-6 font-sans opacity-100 shadow-2xl">
+                    <div className="space-y-8">
+                      <div className="flex items-center justify-between">
+                        <div className="font-serif font-bold text-xl text-[#2d4029] flex items-center gap-2.5">
+                          <div className="w-10 h-10 bg-[#faf8f4] rounded-xl flex items-center justify-center shadow-md shadow-[#4c6a46]/10 transition-transform group-hover:scale-105">
+                            <span className="text-white font-serif text-xl font-bold">
+                              <img src={logo} alt=" b&J logo" />
+                            </span>
+                          </div>
+                          B&J Mushrooms
                         </div>
-                        B&J Mushrooms
+                        <button
+                          onClick={() => setIsMobileOpen(false)}
+                          className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
                       </div>
-                      <button
-                        onClick={() => setIsMobileOpen(false)}
-                        className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
+
+                      {/* Profile Section inside Drawer */}
+                      {user && (
+                        <div className="flex items-center gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                          <Avatar className="w-10 h-10 border border-gray-100">
+                            <AvatarImage
+                              src={profile?.photoURL || ""}
+                              alt="Profile"
+                            />
+                            <AvatarFallback className="bg-[#e3d7c3] text-[#2d4029] text-sm font-bold font-mono">
+                              {getInitials()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-bold text-[#2d4029] truncate">
+                              {profile?.displayName ||
+                                user.email?.split("@")[0]}
+                            </p>
+                            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                              {role || "Customer"}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Mobile Links Stack */}
+                      <div className="space-y-2">
+                        {navigationItems.map((item) => {
+                          const Icon = item.icon;
+                          return (
+                            <NavLink
+                              key={item.path}
+                              to={item.path}
+                              onClick={() => setIsMobileOpen(false)}
+                              className={({ isActive }) => `
+                                flex items-center gap-3 px-4 py-3.5 rounded-xl text-base font-semibold transition-all
+                                ${
+                                  isActive
+                                    ? "bg-[#4c6a46]/10 text-[#4c6a46]"
+                                    : "text-gray-600 hover:bg-gray-50"
+                                }
+                              `}
+                            >
+                              <Icon className="w-5 h-5" />
+                              {item.name}
+                            </NavLink>
+                          );
+                        })}
+                      </div>
                     </div>
 
-                    {/* Profile Section inside Drawer */}
-                    {user && (
-                      <div className="flex items-center gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                        <Avatar className="w-10 h-10 border border-gray-100">
-                          <AvatarImage
-                            src={profile?.photoURL || ""}
-                            alt="Profile"
-                          />
-                          <AvatarFallback className="bg-[#e3d7c3] text-[#2d4029] text-sm font-bold font-mono">
-                            {getInitials()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-bold text-[#2d4029] truncate">
-                            {profile?.displayName || user.email?.split("@")[0]}
-                          </p>
-                          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                            {role || "Customer"}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Mobile Links Stack */}
-                    <div className="space-y-2">
-                      {navigationItems.map((item) => {
-                        const Icon = item.icon;
-                        return (
-                          <NavLink
-                            key={item.path}
-                            to={item.path}
+                    {/* Mobile Drawer Auth Call-To-Actions Footer */}
+                    <div className="pt-4 border-t border-gray-200/60">
+                      {user ? (
+                        <button
+                          onClick={() => {
+                            setIsMobileOpen(false);
+                            logout();
+                          }}
+                          className="w-full h-12 rounded-full font-semibold bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 flex items-center justify-center gap-2 transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Log out
+                        </button>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-3">
+                          <Link
+                            to="/login"
                             onClick={() => setIsMobileOpen(false)}
-                            className={({ isActive }) => `
-                              flex items-center gap-3 px-4 py-3.5 rounded-xl text-base font-semibold transition-all
-                              ${
-                                isActive
-                                  ? "bg-[#4c6a46]/10 text-[#4c6a46]"
-                                  : "text-gray-600 hover:bg-gray-50"
-                              }
-                            `}
+                            className="h-12 rounded-full border border-gray-200 font-semibold text-gray-600 text-sm bg-white hover:bg-gray-50 flex items-center justify-center transition-colors"
                           >
-                            <Icon className="w-5 h-5" />
-                            {item.name}
-                          </NavLink>
-                        );
-                      })}
+                            Sign In
+                          </Link>
+                          <Link
+                            to="/register"
+                            onClick={() => setIsMobileOpen(false)}
+                            className="h-12 rounded-full bg-[#4c6a46] hover:bg-[#3d5538] text-white font-semibold text-sm shadow-md shadow-[#4c6a46]/10 flex items-center justify-center transition-colors"
+                          >
+                            Register
+                          </Link>
+                        </div>
+                      )}
                     </div>
                   </div>
-
-                  {/* Mobile Drawer Auth Call-To-Actions Footer */}
-                  <div className="pt-4 border-t border-gray-200/60">
-                    {user ? (
-                      <button
-                        onClick={() => {
-                          setIsMobileOpen(false);
-                          logout();
-                        }}
-                        className="w-full h-12 rounded-full font-semibold bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 flex items-center justify-center gap-2 transition-colors"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Log out
-                      </button>
-                    ) : (
-                      <div className="grid grid-cols-2 gap-3">
-                        <Link
-                          to="/login"
-                          onClick={() => setIsMobileOpen(false)}
-                          className="h-12 rounded-full border border-gray-200 font-semibold text-gray-600 text-sm bg-white hover:bg-gray-50 flex items-center justify-center transition-colors"
-                        >
-                          Sign In
-                        </Link>
-                        <Link
-                          to="/register"
-                          onClick={() => setIsMobileOpen(false)}
-                          className="h-12 rounded-full bg-[#4c6a46] hover:bg-[#3d5538] text-white font-semibold text-sm shadow-md shadow-[#4c6a46]/10 flex items-center justify-center transition-colors"
-                        >
-                          Register
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+                </div>,
+                document.body,
+              )}
           </div>
         </div>
       </div>

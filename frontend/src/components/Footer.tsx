@@ -71,7 +71,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="w-full bg-[#faf8f4] border-t border-gray-200/60 font-sans antialiased">
+    <footer className="w-full bg-[#4c6a46] border-t border-[#faf8f4]/20 font-sans antialiased">
       {/* TOP SECTION: VALUE PROPOSITIONS MATRICES */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-10 border-b border-gray-200/40">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -79,14 +79,14 @@ export default function Footer() {
             const Icon = prop.icon;
             return (
               <div key={idx} className="flex items-start gap-4 p-2">
-                <div className="w-12 h-12 bg-[#4c6a46]/10 rounded-2xl flex items-center justify-center text-[#4c6a46] shrink-0 shadow-sm">
+                <div className="w-12 h-12 bg-[#faf8f4] rounded-2xl flex items-center justify-center text-[#4c6a46] shrink-0 shadow-sm">
                   <Icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-[#2d4029] tracking-wide mb-1">
+                  <h4 className="text-sm font-bold text-[#faf8f4] tracking-wide mb-1">
                     {prop.title}
                   </h4>
-                  <p className="text-xs text-gray-500 font-medium leading-relaxed">
+                  <p className="text-xs text-[#faf8f4]/80 font-medium leading-relaxed">
                     {prop.desc}
                   </p>
                 </div>
@@ -111,7 +111,7 @@ export default function Footer() {
                 B&J Mushroom Products
               </span>
             </Link>
-            <p className="text-sm text-gray-600 font-medium leading-relaxed max-w-sm">
+            <p className="text-sm text-[#faf8f4] hover:text-white font-medium leading-relaxed max-w-sm">
               Discover gourmet mushroom varieties, premium grow kits, and
               advanced laboratory equipment engineered to bring farm-to-table
               quality straight to your space.
@@ -119,19 +119,19 @@ export default function Footer() {
             <div className="flex items-center gap-3 pt-2">
               <a
                 href="https://www.facebook.com/share/1Bmfp87yNE/"
-                className="w-9 h-9 bg-white hover:bg-[#4c6a46]/10 text-gray-500 hover:text-[#4c6a46] border border-gray-200 rounded-full flex items-center justify-center transition-all shadow-sm"
+                className="w-9 h-9 bg-[#faf8f4] hover:bg-white text-[#4c6a46] border border-[#faf8f4] rounded-full flex items-center justify-center transition-all shadow-sm"
               >
                 <FacebookIcon />
               </a>
               <a
                 href="#"
-                className="w-9 h-9 bg-white hover:bg-[#4c6a46]/10 text-gray-500 hover:text-[#4c6a46] border border-gray-200 rounded-full flex items-center justify-center transition-all shadow-sm"
+                className="w-9 h-9 bg-[#faf8f4] hover:bg-white text-[#4c6a46] border border-[#faf8f4] rounded-full flex items-center justify-center transition-all shadow-sm"
               >
                 <InstagramIcon />
               </a>
               <a
                 href="#"
-                className="w-9 h-9 bg-white hover:bg-[#4c6a46]/10 text-gray-500 hover:text-[#4c6a46] border border-gray-200 rounded-full flex items-center justify-center transition-all shadow-sm"
+                className="w-9 h-9 bg-[#faf8f4] hover:bg-white text-[#4c6a46] border border-[#faf8f4] rounded-full flex items-center justify-center transition-all shadow-sm"
               >
                 <TikTokIcon />
               </a>
@@ -147,7 +147,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/"
-                  className="text-gray-500 hover:text-[#4c6a46] transition-colors"
+                  className="text-[#faf8f4] hover:text-white transition-colors"
                 >
                   Fresh Harvests
                 </Link>
@@ -155,7 +155,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/"
-                  className="text-gray-500 hover:text-[#4c6a46] transition-colors"
+                  className="text-[#faf8f4] hover:text-white transition-colors"
                 >
                   Fruiting Kits
                 </Link>
@@ -163,7 +163,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/"
-                  className="text-gray-500 hover:text-[#4c6a46] transition-colors"
+                  className="text-[#faf8f4] hover:text-white transition-colors"
                 >
                   Agar & Cultures
                 </Link>
@@ -171,7 +171,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/"
-                  className="text-gray-500 hover:text-[#4c6a46] transition-colors"
+                  className="text-[#faf8f4] hover:text-white transition-colors"
                 >
                   Digital Gift Cards
                 </Link>
@@ -188,7 +188,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/"
-                  className="text-gray-500 hover:text-[#4c6a46] transition-colors"
+                  className="text-[#faf8f4] hover:text-white transition-colors"
                 >
                   Help Center / FAQs
                 </Link>
@@ -196,7 +196,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/"
-                  className="text-gray-500 hover:text-[#4c6a46] transition-colors"
+                  className="text-[#faf8f4] hover:text-white transition-colors"
                 >
                   Cultivation Guides
                 </Link>
@@ -204,7 +204,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/orders"
-                  className="text-gray-500 hover:text-[#4c6a46] transition-colors"
+                  className="text-[#faf8f4] hover:text-white transition-colors"
                 >
                   Track Orders
                 </Link>
@@ -212,7 +212,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/"
-                  className="text-gray-500 hover:text-[#4c6a46] transition-colors"
+                  className="text-[#faf8f4] hover:text-white transition-colors"
                 >
                   Contact Farm
                 </Link>
@@ -225,7 +225,7 @@ export default function Footer() {
             <h5 className="font-serif font-bold text-sm text-[#2d4029] uppercase tracking-wider">
               Subscribe to our Newsletter
             </h5>
-            <p className="text-sm text-gray-600 font-medium leading-relaxed">
+            <p className="text-sm text-[#faf8f4] font-medium leading-relaxed">
               Signup for exclusive batch releases, deep discounts, and seasonal
               mushroom cultivation tutorials.
             </p>
@@ -238,12 +238,12 @@ export default function Footer() {
                   placeholder="example@mushroomharvest.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-12 px-4 bg-white border border-gray-200 text-sm font-medium rounded-2xl placeholder-gray-400 focus:outline-none focus:border-[#4c6a46] focus:ring-1 focus:ring-[#4c6a46] shadow-inner transition-all"
+                  className="w-full h-12 px-4 bg-[#faf8f4] border border-[#faf8f4]/40 text-[#2d4029] text-sm font-medium rounded-2xl placeholder-[#2d4029]/50 focus:outline-none focus:border-white focus:ring-1 focus:ring-white shadow-inner transition-all"
                 />
               </div>
               <button
                 type="submit"
-                className="w-full h-12 bg-[#4c6a46] hover:bg-[#3d5538] text-white font-semibold text-sm rounded-full flex items-center justify-center gap-2 shadow-md shadow-[#4c6a46]/10 transition-all focus:outline-none group"
+                className="w-full h-12 bg-[#faf8f4] hover:bg-white text-[#4c6a46] font-semibold text-sm rounded-full flex items-center justify-center gap-2 shadow-md transition-all focus:outline-none group"
               >
                 <span>Subscribe</span>
                 <Send className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

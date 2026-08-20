@@ -11,18 +11,16 @@ import {
   Phone,
   MapPin,
   HelpCircle,
-  Coins,
-  CreditCard,
   Sparkles,
   ShieldCheck,
   Truck,
-  Percent,
   Zap,
   Check,
   AlertCircle,
   Loader2,
 } from "lucide-react";
 import { loginUser, registerUser, socialAuth } from "@/services/auth.service";
+import logo from "@/assets/Logo.png";
 
 // ---------------------------------------------------------------------------
 // Error Parser Helper
@@ -790,49 +788,49 @@ function LoginBrandPanel() {
         <div className="bg-white rounded-3xl p-8 text-[#333333] shadow-2xl relative">
           <div className="space-y-3 w-[65%]">
             <h3 className="text-2xl font-serif font-bold text-[#2d4029] leading-tight">
-              Unlock exclusive farm-fresh offers
+              Order fresh mushroom products with ease
             </h3>
             <p className="text-xs text-gray-500 font-medium leading-relaxed">
-              Use your custom farm token identity across our network to balance
-              orders, collect harvests, and monitor digital production queues
-              effortlessly.
+              Browse our products, place your order securely, and track every
+              delivery from our farm to your doorstep.
             </p>
           </div>
+
           <button
             type="button"
             className="mt-6 bg-[#e3d7c3] hover:bg-[#d5c7b1] text-[#2d4029] font-bold text-xs px-5 py-2.5 rounded-full transition-colors"
           >
-            Learn more
+            Track your order
           </button>
 
           <div className="absolute -right-6 top-6 w-52 h-32 bg-[#e8e5da] border border-white/60 rounded-xl p-4 shadow-xl transform rotate-6 flex flex-col justify-between text-[#2d4029]">
             <div className="flex justify-between items-start">
               <span className="text-[10px] font-bold tracking-widest uppercase opacity-70">
-                Harvest Pass
+                Order Status
               </span>
-              <CreditCard className="w-5 h-5 opacity-80" />
+              <Truck className="w-5 h-5 opacity-80" />
             </div>
             <div className="space-y-1">
               <div className="text-xs font-mono tracking-wider font-bold">
-                XXXX XXXX 4120
+                Order #MH-4120
               </div>
-              <div className="flex justify-between text-[8px] font-semibold uppercase opacity-60">
-                <span>Gold Member</span>
-                <span>Exp 12/28</span>
+              <div className="flex items-center gap-1 text-[8px] font-semibold uppercase opacity-60">
+                <Check className="w-3 h-3" />
+                Out for delivery
               </div>
             </div>
           </div>
 
           <div className="absolute right-4 -bottom-5 bg-white border border-gray-100 px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2.5 transform -rotate-2">
-            <div className="w-7 h-7 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600">
-              <Coins className="w-4 h-4 fill-amber-500/20" />
+            <div className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center text-[#4c6a46]">
+              <Truck className="w-4 h-4" />
             </div>
             <div className="text-right">
               <div className="text-[9px] font-bold text-gray-400 uppercase tracking-wider leading-none">
-                Farm Credits
+                Delivery Update
               </div>
-              <div className="text-sm font-mono font-black text-[#2d4029] leading-none mt-0.5">
-                120.50
+              <div className="text-sm font-bold text-[#2d4029] leading-none mt-0.5">
+                Arriving today
               </div>
             </div>
           </div>
@@ -840,20 +838,19 @@ function LoginBrandPanel() {
 
         <div className="space-y-3 pt-4">
           <h4 className="text-xl font-serif font-bold tracking-wide text-white">
-            Discover new mushroom varieties & grow kits
+            Fresh products, simple ordering
           </h4>
           <p className="text-sm text-gray-300 font-medium leading-relaxed max-w-sm">
-            Explore our laboratory additions, including specialized culinary
-            strains and digital automation tools customized to orchestrate
-            seamless farm-to-table delivery parameters.
+            Discover premium mushroom products, manage your cart, and follow
+            your order every step of the way.
           </p>
         </div>
 
         <div className="flex items-center gap-2 pt-2">
           <span className="w-5 h-1.5 bg-white rounded-full" />
-          <span className="w-1.5 h-1.5 bg-white/40 rounded-full hover:bg-white/70 cursor-pointer" />
-          <span className="w-1.5 h-1.5 bg-white/40 rounded-full hover:bg-white/70 cursor-pointer" />
-          <span className="w-1.5 h-1.5 bg-white/40 rounded-full hover:bg-white/70 cursor-pointer" />
+          <span className="w-1.5 h-1.5 bg-white/40 rounded-full" />
+          <span className="w-1.5 h-1.5 bg-white/40 rounded-full" />
+          <span className="w-1.5 h-1.5 bg-white/40 rounded-full" />
         </div>
       </div>
 
@@ -875,10 +872,12 @@ function RegisterBrandPanel() {
       </div>
 
       <div className="flex items-center gap-3 relative z-10">
-        <div className="w-10 h-10 bg-[#4c6a46] rounded-xl flex items-center justify-center shadow-sm">
-          <span className="text-white font-serif text-xl font-bold">M</span>
+        <div className="w-10 h-10 bg-[#faf8f4] rounded-xl flex items-center justify-center shadow-md shadow-[#4c6a46]/10 transition-transform group-hover:scale-105">
+          <span className="text-white font-serif text-xl font-bold">
+            <img src={logo} alt=" b&J logo" />
+          </span>
         </div>
-        <span className="font-serif font-bold text-xl text-white tracking-wide">
+        <span className="font-serif font-bold text-xl text-[#2d4029] tracking-wide">
           Mushroom Harvest
         </span>
       </div>
@@ -890,7 +889,7 @@ function RegisterBrandPanel() {
           </h1>
           <p className="text-sm text-gray-300 font-medium leading-relaxed">
             Create an account to purchase premium mushroom products, save
-            delivery addresses, track orders, and receive exclusive rewards.
+            delivery addresses and track orders.
           </p>
         </div>
 
@@ -911,14 +910,7 @@ function RegisterBrandPanel() {
                 icon: <Truck className="w-4 h-4" />,
                 label: "Real-time Order Tracking",
               },
-              {
-                icon: <Percent className="w-4 h-4" />,
-                label: "Exclusive Subscriber Discounts",
-              },
-              {
-                icon: <Coins className="w-4 h-4" />,
-                label: "Earn Reward Points on Orders",
-              },
+
               {
                 icon: <Zap className="w-4 h-4" />,
                 label: "Faster One-Click Checkout",
@@ -1001,8 +993,10 @@ export default function AuthPage() {
         {/* Form Panel */}
         <div className="w-full md:w-[45%] bg-[#faf8f4] flex flex-col justify-center px-6 py-10 sm:px-12 lg:px-14">
           <div className="flex items-center gap-3 mb-6 md:hidden">
-            <div className="w-10 h-10 bg-[#4c6a46] rounded-xl flex items-center justify-center shadow-sm">
-              <span className="text-white font-serif text-xl font-bold">M</span>
+            <div className="w-10 h-10 bg-[#faf8f4] rounded-xl flex items-center justify-center shadow-md shadow-[#4c6a46]/10 transition-transform group-hover:scale-105">
+              <span className="text-white font-serif text-xl font-bold">
+                <img src={logo} alt=" b&J logo" />
+              </span>
             </div>
             <span className="font-serif font-bold text-xl text-[#2d4029] tracking-wide">
               Mushroom Harvest
