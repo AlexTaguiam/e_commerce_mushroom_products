@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, HelpCircle } from "lucide-react";
 import axios from "axios";
-// Adjust this import path to point directly to your shared Axios config file
 import { getFeaturedProducts } from "@/services/product.service";
-import ProductCard from "./ProductCard";
 import { type Product } from "../types/product";
 import { Skeleton } from "@/components/ui/skeleton";
+import CoverflowCarousel, {
+  type CoverflowCarouselItem,
+} from "@/components/ui/coverflow-carousel";
 
 export default function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -14,7 +15,6 @@ export default function FeaturedProducts() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Setting up a clean, abortable request controller to avoid memory leaks on page toggles
     const controller = new AbortController();
 
     const fetchFeaturedProducts = async () => {
@@ -31,20 +31,12 @@ export default function FeaturedProducts() {
         } else {
           setError(
             resData.message ||
-              "Failed to parse featured data payload elements correctly.",
+              "Failed to load featured products.",
           );
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
-        // Ignore errors caused by standard component unmounting cancels
         if (axios.isCancel(err)) return;
-
-        console.error(
-          "Axios execution error matching featured catalog pipeline:",
-          err,
-        );
-
-        // Extract backend custom message if available, otherwise fall back to native Axios error strings
         const serverErrorMessage =
           err.response?.data?.message ||
           err.message ||
@@ -56,16 +48,21 @@ export default function FeaturedProducts() {
     };
 
     fetchFeaturedProducts();
-
-    return () => {
-      controller.abort();
-    };
+    return () => controller.abort();
   }, []);
+
+  // Map products to the carousel item shape — image and alt only, no detail text
+  const carouselItems: CoverflowCarouselItem[] = products.map((p) => ({
+    id: String(p.productId),
+    image: p.imageUrl,
+    alt: p.name,
+  }));
 
   return (
     <section className="w-full bg-[#faf8f4] py-16 border-b border-gray-200/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* SECTION HEADER BLOCK ROW */}
+
+        {/* SECTION HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
           <div>
             <span className="text-[10px] font-bold tracking-[0.2em] text-[#4c6a46] uppercase block mb-2">
@@ -85,36 +82,33 @@ export default function FeaturedProducts() {
           </Link>
         </div>
 
-        {/* LOADING STATE - SKELETON PLACEHOLDERS */}
+        {/* LOADING STATE — single card skeleton matching the carousel footprint */}
         {isLoading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(3)].map((_, i) => (
-              <div
-                key={i}
-                className="flex flex-col bg-white border border-gray-100 rounded-3xl p-5 space-y-4 shadow-sm"
-              >
-                <Skeleton className="aspect-square w-full rounded-2xl bg-gray-100/80 animate-pulse" />
-                <div className="space-y-2 flex-1">
-                  <Skeleton className="h-5 w-2/3 bg-gray-100/80 rounded animate-pulse" />
-                  <Skeleton className="h-3.5 w-full bg-gray-100/80 rounded animate-pulse" />
-                </div>
-                <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
-                  <Skeleton className="h-5 w-16 bg-gray-100/80 rounded animate-pulse" />
-                  <Skeleton className="h-9 w-20 bg-gray-100/80 rounded-full animate-pulse" />
-                </div>
+          <div className="flex flex-col items-center gap-6">
+            <Skeleton className="h-[340px] w-[420px] rounded-2xl bg-gray-200/70 animate-pulse" />
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-9 w-16 rounded-full bg-gray-200/70 animate-pulse" />
+              <div className="flex gap-1.5">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton
+                    key={i}
+                    className="h-1.5 w-1.5 rounded-full bg-gray-200/70 animate-pulse"
+                  />
+                ))}
               </div>
-            ))}
+              <Skeleton className="h-9 w-16 rounded-full bg-gray-200/70 animate-pulse" />
+            </div>
           </div>
         )}
 
-        {/* ERROR STATE FALLBACK */}
+        {/* ERROR STATE */}
         {!isLoading && error && (
           <div className="w-full bg-white border border-gray-200/60 rounded-3xl p-8 text-center max-w-xl mx-auto shadow-sm">
             <div className="w-10 h-10 bg-gray-50 text-gray-400 rounded-xl flex items-center justify-center mx-auto mb-3 border border-gray-100">
               <HelpCircle className="w-5 h-5" />
             </div>
             <h4 className="font-serif font-bold text-base text-[#2d4029] mb-1">
-              Failed to sync featured selection
+              Failed to load featured selection
             </h4>
             <p className="text-xs text-gray-500 font-medium leading-relaxed">
               {error}
@@ -122,22 +116,29 @@ export default function FeaturedProducts() {
           </div>
         )}
 
-        {/* SUCCESS STATE - PRODUCT GRID */}
-        {!isLoading &&
-          !error &&
-          (products.length === 0 ? (
-            <div className="w-full bg-white border border-gray-200/60 rounded-3xl p-10 text-center max-w-xl mx-auto shadow-sm">
-              <p className="text-xs text-gray-500 font-medium">
-                No highlights available at the moment.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {products.map((product) => (
-                <ProductCard key={product.productId} product={product} />
-              ))}
-            </div>
-          ))}
+        {/* EMPTY STATE */}
+        {!isLoading && !error && products.length === 0 && (
+          <div className="w-full bg-white border border-gray-200/60 rounded-3xl p-10 text-center max-w-xl mx-auto shadow-sm">
+            <p className="text-xs text-gray-500 font-medium">
+              No highlights available at the moment.
+            </p>
+          </div>
+        )}
+
+        {/* CAROUSEL — overflow-hidden clips side-cards on narrow screens without
+            breaking the 3D perspective since `perspective` is scoped to the
+            carousel's own root div, not this wrapper. */}
+        {!isLoading && !error && carouselItems.length > 0 && (
+          <div className="overflow-hidden">
+            <CoverflowCarousel
+              items={carouselItems}
+              loop
+              autoplay
+              autoplayDelay={3500}
+            />
+          </div>
+        )}
+
       </div>
     </section>
   );

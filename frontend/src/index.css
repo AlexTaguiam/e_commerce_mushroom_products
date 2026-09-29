@@ -6,6 +6,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    --shadow-custom: var(----shadow-custom);
+    --color-brand-secondary: var(----brand-secondary);
+    --color-brand: var(----brand);
     --font-heading: var(--font-sans);
     --font-sans: 'Geist Variable', sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
@@ -49,6 +52,8 @@
 }
 
 :root {
+    --brand: oklch(0.72 0.2 352.53);
+    --brand-secondary: oklch(0.66 0.21 354.31);
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
@@ -84,6 +89,9 @@
 }
 
 .dark {
+    --shadow-custom: 0px -1px 0px 0px hsla(0, 0%, 100%, 0.06),
+      0px 0px 0px 1px hsla(0, 0%, 100%, 0.06), 0px 0px 0px 1px #27272a,
+      0px 1px 2px 0px rgba(0, 0, 0, 0.32), 0px 2px 4px 0px rgba(0, 0, 0, 0.32);
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
     --card: oklch(0.205 0 0);
