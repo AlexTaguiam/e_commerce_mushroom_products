@@ -1,9 +1,9 @@
 import { useNavigate, Link } from "react-router-dom";
-import { ShoppingBag, ArrowLeft, ShieldCheck, Trash2 } from "lucide-react";
+import { ShoppingBag, ArrowLeft, ShieldCheck, Trash2, Lock } from "lucide-react";
 import { toast } from "sonner";
 
-// Custom Hooks and UI elements imports
-import { useCart } from "@/context/cartContext"; // Adjust based on exact alias paths
+import { useAuth } from "@/context/authContext";
+import { useCart } from "@/context/cartContext";
 import CartItemRow from "@/components/cart/CartItemRow";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,8 +20,41 @@ import {
 
 export default function CartPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { cartItems, updateQuantity, removeFromCart, clearCart, cartTotal } =
     useCart();
+
+  // Defensive guard — ProtectedRoute handles this redirect, but just in case
+  if (!user) {
+    return (
+      <div className="w-full min-h-[70vh] bg-[#faf8f4] flex flex-col items-center justify-center px-4 py-12 text-center font-sans antialiased">
+        <div className="w-16 h-16 rounded-full bg-[#4c6a46]/10 text-[#4c6a46] flex items-center justify-center mb-5 border border-[#4c6a46]/15">
+          <Lock className="w-6 h-6" />
+        </div>
+        <h2 className="font-serif font-bold text-2xl text-[#2d4029] mb-2">
+          Sign in to view your cart
+        </h2>
+        <p className="text-sm text-gray-400 max-w-xs font-medium leading-relaxed mb-6">
+          Create a free account to start adding products and track your orders.
+        </p>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => navigate("/login?redirect=/cart")}
+            className="bg-[#4c6a46] hover:bg-[#3d5538] text-white font-semibold rounded-xl px-6 h-11 shadow-md"
+          >
+            Sign In
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/register?redirect=/cart")}
+            className="border-[#4c6a46]/30 text-[#4c6a46] font-semibold rounded-xl px-6 h-11"
+          >
+            Register
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // Safely evaluate standard subtotal float parameters
   const calculatedSubtotal =

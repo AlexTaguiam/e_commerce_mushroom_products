@@ -33,17 +33,24 @@ const publicRoutes = (
   </>
 );
 
-const customerRoutes = (
+// Browsing routes — no auth needed, visitors can explore freely
+const browseRoutes = (
   <>
     <Route path="/" element={<HomePage />} />
     <Route path="/catalog" element={<CatalogPage />} />
+    <Route path="/products/:productId" element={<ProductDetailPage />} />
+    <Route path="/contact" element={<ContactPage />} />
+  </>
+);
+
+// Auth-required — ProtectedRoute will redirect to /login?redirect=<pathname>
+const customerRoutes = (
+  <>
     <Route path="/cart" element={<CartPage />} />
     <Route path="/checkout" element={<CheckoutPage />} />
     <Route path="/orders" element={<OrdersPage />} />
     <Route path="/orders/:orderId" element={<OrderDetailPage />} />
     <Route path="/profile" element={<ProfilePage />} />
-    <Route path="/products/:productId" element={<ProductDetailPage />} />
-    <Route path="/contact" element={<ContactPage />} />
     <Route
       path="/orders/:orderId/payment-result"
       element={<LegacyPaymentResultPage />}
@@ -70,6 +77,7 @@ export const AppRouter: React.FC = () => {
   return (
     <Routes>
       {publicRoutes}
+      {browseRoutes}
 
       <Route element={<ProtectedRoute allowedRoles={["customer", "admin"]} />}>
         {customerRoutes}
@@ -79,7 +87,8 @@ export const AppRouter: React.FC = () => {
         {adminRoutes}
       </Route>
 
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      {/* Unknown paths fall back to homepage for visitors */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };

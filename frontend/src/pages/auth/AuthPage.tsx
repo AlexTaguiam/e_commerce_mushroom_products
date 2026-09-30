@@ -212,6 +212,10 @@ interface LoginPayload {
 
 function LoginForm({ onSwitch }: LoginFormProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Respect the ?redirect= param set by ProtectedRoute so the user lands
+  // back where they were trying to go after signing in.
+  const redirectTo = new URLSearchParams(location.search).get("redirect") ?? "/";
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -235,7 +239,7 @@ function LoginForm({ onSwitch }: LoginFormProps) {
       const response = await loginUser(payload.email, payload.password);
 
       if (response.data.role !== "admin") {
-        navigate("/");
+        navigate(redirectTo);
         return;
       }
 
@@ -257,7 +261,7 @@ function LoginForm({ onSwitch }: LoginFormProps) {
       const result = await socialAuth(provider);
 
       if (result.data.data.role !== "admin") {
-        navigate("/");
+        navigate(redirectTo);
         return;
       }
 
@@ -415,6 +419,8 @@ interface RegisterPayload {
 
 function RegisterForm({ onSwitch }: RegisterFormProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = new URLSearchParams(location.search).get("redirect") ?? "/";
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -464,7 +470,7 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
       );
 
       if (response.data.role !== "admin") {
-        navigate("/");
+        navigate(redirectTo);
         return;
       }
 
@@ -486,7 +492,7 @@ function RegisterForm({ onSwitch }: RegisterFormProps) {
       const result = await socialAuth(provider);
 
       if (result.data.data.role !== "admin") {
-        navigate("/");
+        navigate(redirectTo);
         return;
       }
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 
 interface GuardProps {
@@ -8,6 +8,7 @@ interface GuardProps {
 
 export const ProtectedRoute: React.FC<GuardProps> = ({ allowedRoles }) => {
   const { user, role, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -21,7 +22,13 @@ export const ProtectedRoute: React.FC<GuardProps> = ({ allowedRoles }) => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    // Preserve the page they tried to visit so AuthPage can redirect back after login
+    return (
+      <Navigate
+        to={`/login?redirect=${encodeURIComponent(location.pathname)}`}
+        replace
+      />
+    );
   }
 
   if (!role || !allowedRoles.includes(role)) {

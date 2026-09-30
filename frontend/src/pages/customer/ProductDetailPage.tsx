@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
   Plus,
@@ -7,10 +7,12 @@ import {
   ShieldCheck,
   ShoppingBag,
   Truck,
+  Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/context/authContext";
 import { useCart } from "@/context/cartContext";
 import { getProductById } from "@/services/product.service";
 import { type Product } from "@/types/product";
@@ -31,6 +33,8 @@ import { type Product } from "@/types/product";
 export default function ProductDetailPage() {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
   const { addToCart, cartItems } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -118,6 +122,21 @@ export default function ProductDetailPage() {
   };
 
   const handleSubmissionToCart = () => {
+    // Guest: prompt sign-in instead of adding
+    if (!user) {
+      toast("Sign in to add items to your cart", {
+        description: "Create a free account to start shopping with us.",
+        action: {
+          label: "Sign In",
+          onClick: () =>
+            navigate(
+              `/login?redirect=${encodeURIComponent(location.pathname)}`,
+            ),
+        },
+      });
+      return;
+    }
+
     if (isOutOfStock) {
       toast.error(`"${product.name}" is currently out of stock.`);
       return;
@@ -294,11 +313,18 @@ export default function ProductDetailPage() {
                   disabled={isOutOfStock || remaining <= 0}
                   className="flex-1 h-12 bg-[#4c6a46] hover:bg-[#3d5538] text-white font-semibold rounded-xl shadow-md transition-all tracking-wide"
                 >
-                  {isOutOfStock
-                    ? "Out of Stock"
-                    : remaining <= 0
-                      ? "Maxed Out"
-                      : "Add to Basket"}
+                  {isOutOfStock ? (
+                    "Out of Stock"
+                  ) : remaining <= 0 ? (
+                    "Maxed Out"
+                  ) : !user ? (
+                    <span className="flex items-center gap-2">
+                      <Lock className="w-4 h-4" />
+                      Sign in to Buy
+                    </span>
+                  ) : (
+                    "Add to Basket"
+                  )}
                 </Button>
               </div>
 
