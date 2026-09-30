@@ -137,7 +137,7 @@ const CoverflowCarousel = ({
       tabIndex={0}
     >
       <motion.div
-        className="relative mx-auto flex h-[460px] items-center justify-center"
+        className="relative mx-auto flex h-115 items-center justify-center"
         drag={total > 1 && !shouldReduceMotion ? "x" : false}
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.12}
@@ -168,7 +168,7 @@ const CoverflowCarousel = ({
                   : { opacity: 1, rotateY, scale, x: translateX, z: translateZ }
               }
               aria-hidden={!isActive}
-              className="absolute h-[340px] w-[420px] overflow-hidden rounded-2xl border border-foreground/10 bg-background shadow-xl"
+              className="absolute h-85 w-105 overflow-hidden rounded-2xl border border-foreground/10 bg-background shadow-xl"
               style={{
                 transformStyle: "preserve-3d",
                 zIndex: total - Math.abs(offset),

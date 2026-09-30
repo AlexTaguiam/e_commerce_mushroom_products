@@ -31,7 +31,7 @@ import { type Product } from "@/types/product";
 export default function ProductDetailPage() {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, cartItems } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -95,36 +95,62 @@ export default function ProductDetailPage() {
 
   const numericPrice = parseFloat(product.price.replace(/[^0-9.]/g, "")) || 0;
   const isOutOfStock = product.stockQuantity === 0;
-  const isLowStock = product.stockQuantity > 0 && product.stockQuantity <= 5;
+
+  // How many already in cart, and how many can still be added
+  const inCartQty =
+    cartItems.find((i) => i.productId === product.productId)?.quantity ?? 0;
+  const remaining = product.stockQuantity - inCartQty;
 
   const handleQuantityIncrement = () => {
-    if (quantity < product.stockQuantity) {
+    if (quantity < remaining) {
       setQuantity((prev) => prev + 1);
+    } else {
+      toast.warning(
+        remaining <= 0
+          ? `You already have all available stock in your cart.`
+          : `Only ${remaining} more can be added (${product.stockQuantity} in stock, ${inCartQty} already in cart).`,
+      );
     }
   };
 
   const handleQuantityDecrement = () => {
-    if (quantity > 1) {
-      setQuantity((prev) => prev - 1);
-    }
+    if (quantity > 1) setQuantity((prev) => prev - 1);
   };
 
   const handleSubmissionToCart = () => {
     if (isOutOfStock) {
-      toast.error("Item configuration out of stock.");
+      toast.error(`"${product.name}" is currently out of stock.`);
       return;
     }
 
-    addToCart({
-      productId: product.productId,
-      name: product.name,
-      price: product.price,
-      unit: product.unit,
-      imageUrl: product.imageUrl,
-      stockQuantity: product.stockQuantity,
-    });
+    if (remaining <= 0) {
+      toast.error(
+        `You already have all ${product.stockQuantity} available units in your cart.`,
+      );
+      return;
+    }
 
-    toast.success(`Added ${quantity} x "${product.name}" to your cart.`);
+    if (quantity > remaining) {
+      toast.error(
+        `You can only add ${remaining} more "${product.name}" (${inCartQty} already in cart, ${product.stockQuantity} total stock).`,
+      );
+      return;
+    }
+
+    addToCart(
+      {
+        productId: product.productId,
+        name: product.name,
+        price: product.price,
+        unit: product.unit,
+        imageUrl: product.imageUrl,
+        stockQuantity: product.stockQuantity,
+      },
+      quantity,
+    );
+
+    toast.success(`${quantity > 1 ? `${quantity}× ` : ""}${product.name} added to cart.`);
+    setQuantity(1);
   };
 
   return (
@@ -169,23 +195,35 @@ export default function ProductDetailPage() {
           <div className="lg:col-span-6 space-y-6 lg:py-2">
             {/* Context Badge Group */}
             <div className="space-y-2">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="bg-[#4c6a46]/10 text-[#4c6a46] text-[11px] font-bold tracking-wider uppercase px-3 py-1 rounded-lg">
                   {product.category}
                 </span>
 
-                {/* Inline Stock Flag Modules */}
+                {/* Stock badge */}
                 {isOutOfStock ? (
                   <span className="text-xs font-bold text-red-500 bg-red-50 border border-red-100 px-2.5 py-0.5 rounded-lg">
                     Out of Stock
                   </span>
-                ) : isLowStock ? (
+                ) : product.stockQuantity <= 5 ? (
                   <span className="text-xs font-bold text-amber-600 bg-amber-50 border border-amber-100 px-2.5 py-0.5 rounded-lg animate-pulse">
-                    Low Stock: Only {product.stockQuantity} left
+                    Only {product.stockQuantity} left
+                  </span>
+                ) : product.stockQuantity <= 10 ? (
+                  <span className="text-xs font-bold text-amber-600 bg-amber-50 border border-amber-100 px-2.5 py-0.5 rounded-lg">
+                    Low stock · {product.stockQuantity} left
                   </span>
                 ) : (
                   <span className="text-xs font-bold text-[#4c6a46] bg-[#4c6a46]/5 border border-[#4c6a46]/10 px-2.5 py-0.5 rounded-lg">
-                    In Stock
+                    {product.stockQuantity} in stock
+                  </span>
+                )}
+
+                {/* Already-in-cart indicator */}
+                {inCartQty > 0 && !isOutOfStock && (
+                  <span className="text-xs font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                    <ShoppingBag className="w-3 h-3" />
+                    {inCartQty} in cart
                   </span>
                 )}
               </div>
@@ -242,7 +280,7 @@ export default function ProductDetailPage() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    disabled={quantity >= product.stockQuantity || isOutOfStock}
+                    disabled={quantity >= remaining || isOutOfStock}
                     onClick={handleQuantityIncrement}
                     className="w-9 h-9 rounded-lg hover:bg-gray-100 text-[#2d4029]"
                   >
@@ -253,10 +291,14 @@ export default function ProductDetailPage() {
                 {/* Main Action Trigger Button */}
                 <Button
                   onClick={handleSubmissionToCart}
-                  disabled={isOutOfStock}
-                  className="flex-1 h-12 bg-[#4c6a46] hover:bg-[#3d5538] text-white font-semibold rounded-xl shadow-md transition-all tracking-wide disabled:bg-gray-200 disabled:text-gray-400"
+                  disabled={isOutOfStock || remaining <= 0}
+                  className="flex-1 h-12 bg-[#4c6a46] hover:bg-[#3d5538] text-white font-semibold rounded-xl shadow-md transition-all tracking-wide"
                 >
-                  {isOutOfStock ? "Out of Stock" : `Add to Basket`}
+                  {isOutOfStock
+                    ? "Out of Stock"
+                    : remaining <= 0
+                      ? "Maxed Out"
+                      : "Add to Basket"}
                 </Button>
               </div>
 
