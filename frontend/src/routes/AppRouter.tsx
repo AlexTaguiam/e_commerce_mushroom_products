@@ -22,6 +22,7 @@ import OrderDetailPage from "@/pages/customer/OrderDetailPage";
 
 import AdminLayout from "@/components/admin/AdminLayout";
 import ProductsPage from "@/pages/admin/ProductsPage";
+import ReportsPage from "@/pages/admin/ReportsPage";
 import PaymentResultPage, {
   LegacyPaymentResultPage,
 } from "@/pages/customer/PaymentResultPage";
@@ -69,6 +70,7 @@ const adminRoutes = (
     <Route path="/admin/products" element={<ProductsPage />} />
     <Route path="/admin/inventory" element={<InventoryPage />} />
     <Route path="/admin/orders" element={<OrderManagerPage />} />
+    <Route path="/admin/reports" element={<ReportsPage />} />
     <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
   </Route>
 );

@@ -9,6 +9,7 @@ import {
   Sprout,
   PackageSearch,
   SendToBack,
+  BarChart3,
 } from "lucide-react";
 import { useAuth } from "@/context/authContext";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ const ADMIN_NAV_ITEMS = [
   { label: "Products", path: "/admin/products", icon: PackageSearch },
   { label: "Inventory Log", path: "/admin/inventory", icon: Package },
   { label: "Orders", path: "/admin/orders", icon: ClipboardList },
+  { label: "Reports", path: "/admin/reports", icon: BarChart3 },
 ];
 
 export function AdminSidebar({ onNavItemClick }: AdminSidebarProps) {

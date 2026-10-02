@@ -12,6 +12,7 @@ import paymongoWebhookRouter from "./webhooks/paymongoWebhook";
 import contactRoutes from "./routes/contactRoutes";
 import paymentRoutes from "./routes/paymentsRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
+import reportRoutes from "./routes/reportRoutes";
 import { globalLimiter } from "./middleware/rateLimiter";
 import { schedulePendingCheckoutCleanup } from "./jobs/pendingCheckoutCleanup";
 
@@ -61,6 +62,7 @@ app.use("/api/inventory", inventoryRoutes);
 app.use("/api", contactRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/reports", reportRoutes);
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 

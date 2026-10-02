@@ -91,3 +91,5 @@ coverage/
 .cache/
 .parcel-cache/
 .eslintcache
+
+.agents
