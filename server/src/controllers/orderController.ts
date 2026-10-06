@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../config/db";
 import { sendResponse } from "../utils/reponseHandler";
+import { SHIPPING_FEE } from "../constants/enums";
 
 export const createOrder = async (
   req: Request,
@@ -63,6 +64,10 @@ export const createOrder = async (
           priceAtPurchase: product.price,
         });
       }
+
+      // Flat shipping fee for delivery orders; pickup ships free.
+      const shippingFee = fulfillmentType === "delivery" ? SHIPPING_FEE : 0;
+      computedTotalAmount += shippingFee;
 
       const newOrder = await tx.order.create({
         data: {

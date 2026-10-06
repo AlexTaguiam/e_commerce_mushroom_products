@@ -31,6 +31,11 @@ interface FormValidationErrors {
   deliveryAddress?: string;
 }
 
+// Flat shipping fee (PHP) for delivery orders. Mirrors SHIPPING_FEE on the
+// backend (server/src/constants/enums.ts) — the server is the source of truth;
+// this is only for display.
+const SHIPPING_FEE = 50;
+
 export default function CheckoutPage() {
   const { cartItems, cartTotal, clearCart } = useCart();
   const { dbProfile } = useAuth();
@@ -541,9 +546,13 @@ export default function CheckoutPage() {
                 </span>
               </div>
               <div className="flex justify-between border-b border-gray-100 pb-3">
-                <span>Logistics Fulfillment</span>
+                <span>Shipping Fee</span>
                 <span className="text-[#2d4029] font-semibold">
-                  {fulfillmentType === "delivery" ? "₱0.00" : "FREE"}
+                  {fulfillmentType === "delivery"
+                    ? `₱${SHIPPING_FEE.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                      })}`
+                    : "FREE (Pickup)"}
                 </span>
               </div>
               <div className="flex justify-between items-baseline pt-1">
@@ -552,7 +561,10 @@ export default function CheckoutPage() {
                 </span>
                 <span className="font-serif font-bold text-xl text-[#2d4029]">
                   ₱
-                  {cartTotal.toLocaleString(undefined, {
+                  {(
+                    cartTotal +
+                    (fulfillmentType === "delivery" ? SHIPPING_FEE : 0)
+                  ).toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                   })}
                 </span>

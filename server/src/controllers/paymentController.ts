@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import prisma from "../config/db";
 import paymongo from "../config/paymongo";
 import { sendResponse } from "../utils/reponseHandler";
+import { SHIPPING_FEE } from "../constants/enums";
 
 export const createPaymentIntent = async (
   req: Request,
@@ -172,6 +173,10 @@ export const createIntentForCart = async (
 
       computedTotalAmount += Number(product.price) * item.quantity;
     }
+
+    // Flat shipping fee for delivery orders; pickup ships free.
+    const shippingFee = fulfillmentType === "delivery" ? SHIPPING_FEE : 0;
+    computedTotalAmount += shippingFee;
 
     const databaseUser = await prisma.user.findUnique({
       where: { firebaseUid: uid },
