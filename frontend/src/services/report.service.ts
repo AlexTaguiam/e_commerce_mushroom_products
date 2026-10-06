@@ -72,8 +72,8 @@ export async function getSalesTrends(range: ReportRange) {
   );
 }
 
-export async function downloadSalesXml(range: ReportRange) {
-  return adminApi.get<Blob>("/reports/export/xml", {
+export async function downloadSalesXlsx(range: ReportRange) {
+  return adminApi.get<Blob>("/reports/export/xlsx", {
     ...params(range),
     responseType: "blob",
   });

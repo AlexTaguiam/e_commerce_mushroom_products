@@ -13,7 +13,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  downloadSalesXml,
+  downloadSalesXlsx,
   getBestSellingProducts,
   getCustomerPurchaseSummary,
   getSalesSummary,
@@ -191,11 +191,11 @@ export default function ReportsPage() {
   const handleExport = async () => {
     setExporting(true);
     try {
-      const response = await downloadSalesXml(range);
+      const response = await downloadSalesXlsx(range);
       const url = URL.createObjectURL(response.data);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `sales-report-${range.from}.xml`;
+      link.download = `sales-report-${range.from}.xlsx`;
       link.click();
       URL.revokeObjectURL(url);
     } finally {
@@ -237,7 +237,7 @@ export default function ReportsPage() {
             className="gap-2 rounded-xl bg-[#4c6a46] text-xs hover:bg-[#3d5538]"
           >
             <Download className="h-3.5 w-3.5" />{" "}
-            {exporting ? "Preparing..." : "Export XML"}
+            {exporting ? "Preparing..." : "Export XLSX"}
           </Button>
         </div>
       </header>

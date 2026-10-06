@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import ExcelJS from "exceljs";
 import prisma from "../config/db";
 import { sendResponse } from "../utils/reponseHandler";
 
@@ -33,15 +34,6 @@ function parseDateRange(req: Request) {
 
 function money(value: unknown): number {
   return Number(value ?? 0);
-}
-
-function escapeXml(value: unknown): string {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
 }
 
 function reportWhere(from: Date, to: Date) {
@@ -209,14 +201,29 @@ export async function getSalesTrends(
   }
 }
 
-export async function exportSalesXml(
+const HEADER_FILL: ExcelJS.Fill = {
+  type: "pattern",
+  pattern: "solid",
+  fgColor: { argb: "FF4C6A46" }, // brand green
+};
+const PESO_FORMAT = '"₱"#,##0.00';
+
+function styleHeaderRow(row: ExcelJS.Row): void {
+  row.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 11 };
+  row.fill = HEADER_FILL;
+  row.alignment = { vertical: "middle" };
+  row.height = 20;
+}
+
+export async function exportSalesXlsx(
   req: Request,
   res: Response,
 ): Promise<void> {
   try {
     const { from, to } = parseDateRange(req);
     const where = reportWhere(from, to);
-    const [orders, products] = await Promise.all([
+
+    const [orders, items, groupedCustomers] = await Promise.all([
       prisma.order.findMany({
         where,
         select: {
@@ -231,35 +238,136 @@ export async function exportSalesXml(
         select: {
           productId: true,
           quantity: true,
-          product: { select: { name: true } },
+          priceAtOrder: true,
+          product: { select: { name: true, category: true } },
         },
       }),
+      prisma.order.groupBy({
+        by: ["userId"],
+        where,
+        _count: { orderId: true },
+        _sum: { totalAmount: true },
+        orderBy: { _sum: { totalAmount: "desc" } },
+      }),
     ]);
+
+    // Aggregate best-selling products
     const productTotals = new Map<
       number,
-      { name: string; quantitySold: number }
+      {
+        name: string;
+        category: string | null;
+        quantitySold: number;
+        revenue: number;
+      }
     >();
-    for (const item of products) {
+    for (const item of items) {
       const current = productTotals.get(item.productId) ?? {
         name: item.product.name,
+        category: item.product.category,
         quantitySold: 0,
+        revenue: 0,
       };
       current.quantitySold += item.quantity;
+      current.revenue += item.quantity * money(item.priceAtOrder);
       productTotals.set(item.productId, current);
     }
-    const revenue = orders
-      .reduce((sum, order) => sum + money(order.totalAmount), 0)
-      .toFixed(2);
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<salesReport from="${escapeXml(from.toISOString())}" to="${escapeXml(to.toISOString())}">\n  <summary orderCount="${orders.length}" totalRevenue="${revenue}" />\n  <bestSellingProducts>\n${Array.from(productTotals, ([productId, product]) => `    <product id="${productId}" name="${escapeXml(product.name)}" quantitySold="${product.quantitySold}" />`).join("\n")}\n  </bestSellingProducts>\n</salesReport>\n`;
-    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    const bestSelling = Array.from(productTotals, ([productId, value]) => ({
+      productId,
+      ...value,
+    })).sort((a, b) => b.quantitySold - a.quantitySold);
+
+    // Resolve customer names
+    const users = await prisma.user.findMany({
+      where: { firebaseUid: { in: groupedCustomers.map((c) => c.userId) } },
+      select: { firebaseUid: true, name: true, email: true },
+    });
+    const userMap = new Map(users.map((u) => [u.firebaseUid, u]));
+
+    const totalRevenue = orders.reduce(
+      (sum, order) => sum + money(order.totalAmount),
+      0,
+    );
+    const itemsSold = items.reduce((sum, item) => sum + item.quantity, 0);
+
+    // ── Build workbook ──────────────────────────────────────────────────
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "B&J Mushrooms";
+    workbook.created = new Date();
+
+    // Sheet 1: Summary
+    const summary = workbook.addWorksheet("Summary");
+    summary.columns = [
+      { header: "Metric", key: "metric", width: 28 },
+      { header: "Value", key: "value", width: 24 },
+    ];
+    styleHeaderRow(summary.getRow(1));
+    summary.addRow({ metric: "Report period (from)", value: from.toISOString().slice(0, 10) });
+    summary.addRow({ metric: "Report period (to)", value: to.toISOString().slice(0, 10) });
+    summary.addRow({ metric: "Total orders", value: orders.length });
+    summary.addRow({ metric: "Items sold", value: itemsSold });
+    const revenueRow = summary.addRow({ metric: "Total revenue", value: totalRevenue });
+    revenueRow.getCell("value").numFmt = PESO_FORMAT;
+    const aovRow = summary.addRow({
+      metric: "Average order value",
+      value: orders.length ? totalRevenue / orders.length : 0,
+    });
+    aovRow.getCell("value").numFmt = PESO_FORMAT;
+
+    // Sheet 2: Best-Selling Products
+    const productsSheet = workbook.addWorksheet("Best-Selling Products");
+    productsSheet.columns = [
+      { header: "Product ID", key: "productId", width: 12 },
+      { header: "Name", key: "name", width: 34 },
+      { header: "Category", key: "category", width: 16 },
+      { header: "Quantity Sold", key: "quantitySold", width: 16 },
+      { header: "Revenue", key: "revenue", width: 18 },
+    ];
+    styleHeaderRow(productsSheet.getRow(1));
+    for (const product of bestSelling) {
+      const row = productsSheet.addRow({
+        productId: product.productId,
+        name: product.name,
+        category: product.category ?? "—",
+        quantitySold: product.quantitySold,
+        revenue: product.revenue,
+      });
+      row.getCell("revenue").numFmt = PESO_FORMAT;
+    }
+
+    // Sheet 3: Customers
+    const customersSheet = workbook.addWorksheet("Customers");
+    customersSheet.columns = [
+      { header: "Customer", key: "name", width: 28 },
+      { header: "Email", key: "email", width: 32 },
+      { header: "Orders", key: "orderCount", width: 12 },
+      { header: "Total Spent", key: "totalSpent", width: 18 },
+    ];
+    styleHeaderRow(customersSheet.getRow(1));
+    for (const customer of groupedCustomers) {
+      const row = customersSheet.addRow({
+        name: userMap.get(customer.userId)?.name ?? "Unknown customer",
+        email: userMap.get(customer.userId)?.email ?? "—",
+        orderCount: customer._count.orderId,
+        totalSpent: money(customer._sum.totalAmount),
+      });
+      row.getCell("totalSpent").numFmt = PESO_FORMAT;
+    }
+
+    // ── Stream the file ─────────────────────────────────────────────────
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="sales-report-${from.toISOString().slice(0, 10)}.xml"`,
+      `attachment; filename="sales-report-${from.toISOString().slice(0, 10)}.xlsx"`,
     );
-    res.status(200).send(xml);
+    await workbook.xlsx.write(res);
+    res.end();
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Unable to export XML report.";
+      error instanceof Error ? error.message : "Unable to export report.";
     sendResponse(res, message.startsWith("Invalid") ? 400 : 500, message);
   }
 }
