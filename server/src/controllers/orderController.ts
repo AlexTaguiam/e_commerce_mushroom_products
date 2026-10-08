@@ -49,9 +49,9 @@ export const createOrder = async (
 
         if (
           product.status !== "active" ||
-          product.stockQuantity <= item.quantity
+          product.stockQuantity < item.quantity
         ) {
-          sendResponse(res, 400, "Insufficint amount of stacks ");
+          sendResponse(res, 400, "Insufficient stock available.");
           return;
         }
 
