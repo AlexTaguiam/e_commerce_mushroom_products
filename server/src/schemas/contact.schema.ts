@@ -23,7 +23,7 @@ export const sendContactMessageSchema = z.object({
 
       phone: z
         .string()
-        .max(50, "phone must be 50 characters or fewer")
+        .max(11, "phone must be 11 characters or fewer")
         .optional(),
 
       message: z

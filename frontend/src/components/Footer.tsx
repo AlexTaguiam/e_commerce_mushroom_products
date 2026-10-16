@@ -71,22 +71,22 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="w-full bg-[#4c6a46] border-t border-[#faf8f4]/20 font-sans antialiased">
+    <footer className="w-full bg-[#2d4029] text-[#faf8f4] font-sans antialiased">
       {/* TOP SECTION: VALUE PROPOSITIONS MATRICES */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-10 border-b border-gray-200/40">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-10 border-b border-[#faf8f4]/10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {valueProps.map((prop, idx) => {
             const Icon = prop.icon;
             return (
               <div key={idx} className="flex items-start gap-4 p-2">
-                <div className="w-12 h-12 bg-[#faf8f4] rounded-2xl flex items-center justify-center text-[#4c6a46] shrink-0 shadow-sm">
+                <div className="w-12 h-12 bg-[#4c6a46] rounded-2xl flex items-center justify-center text-[#faf8f4] shrink-0 shadow-sm ring-1 ring-[#faf8f4]/10">
                   <Icon className="w-5 h-5" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-[#faf8f4] tracking-wide mb-1">
                     {prop.title}
                   </h4>
-                  <p className="text-xs text-[#faf8f4]/80 font-medium leading-relaxed">
+                  <p className="text-xs text-[#faf8f4]/70 font-medium leading-relaxed">
                     {prop.desc}
                   </p>
                 </div>
@@ -102,16 +102,16 @@ export default function Footer() {
           {/* COLUMN 1: BRAND LOGO BLOCK */}
           <div className="lg:col-span-4 space-y-5">
             <Link to="/" className="flex items-center gap-3 group w-max">
-              <div className="w-10 h-10 bg-[#faf8f4] rounded-xl flex items-center justify-center shadow-md shadow-[#4c6a46]/10 transition-transform group-hover:scale-105">
+              <div className="w-10 h-10 bg-[#faf8f4] rounded-xl flex items-center justify-center shadow-md shadow-black/20 transition-transform group-hover:scale-105">
                 <span className="text-white font-serif text-xl font-bold">
                   <img src={logo} alt=" b&J logo" />
                 </span>
               </div>
-              <span className="font-serif font-bold text-xl text-[#2d4029] tracking-wide transition-colors group-hover:text-[#4c6a46]">
+              <span className="font-serif font-bold text-xl text-[#faf8f4] tracking-wide transition-colors group-hover:text-white">
                 B&J Mushroom Products
               </span>
             </Link>
-            <p className="text-sm text-[#faf8f4] hover:text-white font-medium leading-relaxed max-w-sm">
+            <p className="text-sm text-[#faf8f4]/70 font-medium leading-relaxed max-w-sm">
               Discover gourmet mushroom varieties, premium grow kits, and
               advanced laboratory equipment engineered to bring farm-to-table
               quality straight to your space.
@@ -119,19 +119,19 @@ export default function Footer() {
             <div className="flex items-center gap-3 pt-2">
               <a
                 href="https://www.facebook.com/share/1Bmfp87yNE/"
-                className="w-9 h-9 bg-[#faf8f4] hover:bg-white text-[#4c6a46] border border-[#faf8f4] rounded-full flex items-center justify-center transition-all shadow-sm"
+                className="w-9 h-9 bg-[#faf8f4] hover:bg-white hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all shadow-sm"
               >
                 <FacebookIcon />
               </a>
               <a
                 href="#"
-                className="w-9 h-9 bg-[#faf8f4] hover:bg-white text-[#4c6a46] border border-[#faf8f4] rounded-full flex items-center justify-center transition-all shadow-sm"
+                className="w-9 h-9 bg-[#faf8f4] hover:bg-white hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all shadow-sm"
               >
                 <InstagramIcon />
               </a>
               <a
                 href="#"
-                className="w-9 h-9 bg-[#faf8f4] hover:bg-white text-[#4c6a46] border border-[#faf8f4] rounded-full flex items-center justify-center transition-all shadow-sm"
+                className="w-9 h-9 bg-[#faf8f4] hover:bg-white hover:-translate-y-0.5 rounded-full flex items-center justify-center transition-all shadow-sm"
               >
                 <TikTokIcon />
               </a>
@@ -140,14 +140,14 @@ export default function Footer() {
 
           {/* COLUMN 2: SHOP PORTAL LINKS */}
           <div className="col-span-2 space-y-4">
-            <h5 className="font-serif font-bold text-sm text-[#2d4029] uppercase tracking-wider">
+            <h5 className="font-serif font-bold text-sm text-[#faf8f4] uppercase tracking-wider">
               Shop
             </h5>
             <ul className="space-y-2.5 text-sm font-semibold">
               <li>
                 <Link
                   to="/"
-                  className="text-[#faf8f4] hover:text-white transition-colors"
+                  className="text-[#faf8f4]/70 hover:text-white transition-colors"
                 >
                   Fresh Harvests
                 </Link>
@@ -155,7 +155,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/"
-                  className="text-[#faf8f4] hover:text-white transition-colors"
+                  className="text-[#faf8f4]/70 hover:text-white transition-colors"
                 >
                   Fruiting Kits
                 </Link>
@@ -163,7 +163,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/"
-                  className="text-[#faf8f4] hover:text-white transition-colors"
+                  className="text-[#faf8f4]/70 hover:text-white transition-colors"
                 >
                   Agar & Cultures
                 </Link>
@@ -171,7 +171,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/"
-                  className="text-[#faf8f4] hover:text-white transition-colors"
+                  className="text-[#faf8f4]/70 hover:text-white transition-colors"
                 >
                   Digital Gift Cards
                 </Link>
@@ -181,14 +181,14 @@ export default function Footer() {
 
           {/* COLUMN 3: SUPPORT & INFORMATION */}
           <div className="col-span-2 space-y-4">
-            <h5 className="font-serif font-bold text-sm text-[#2d4029] uppercase tracking-wider">
+            <h5 className="font-serif font-bold text-sm text-[#faf8f4] uppercase tracking-wider">
               Support
             </h5>
             <ul className="space-y-2.5 text-sm font-semibold">
               <li>
                 <Link
                   to="/"
-                  className="text-[#faf8f4] hover:text-white transition-colors"
+                  className="text-[#faf8f4]/70 hover:text-white transition-colors"
                 >
                   Help Center / FAQs
                 </Link>
@@ -196,7 +196,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/"
-                  className="text-[#faf8f4] hover:text-white transition-colors"
+                  className="text-[#faf8f4]/70 hover:text-white transition-colors"
                 >
                   Cultivation Guides
                 </Link>
@@ -204,7 +204,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/orders"
-                  className="text-[#faf8f4] hover:text-white transition-colors"
+                  className="text-[#faf8f4]/70 hover:text-white transition-colors"
                 >
                   Track Orders
                 </Link>
@@ -212,7 +212,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/"
-                  className="text-[#faf8f4] hover:text-white transition-colors"
+                  className="text-[#faf8f4]/70 hover:text-white transition-colors"
                 >
                   Contact Farm
                 </Link>
@@ -222,10 +222,10 @@ export default function Footer() {
 
           {/* COLUMN 4: NEWSLETTER INTERACTIVE BOARD */}
           <div className="lg:col-span-4 space-y-4">
-            <h5 className="font-serif font-bold text-sm text-[#2d4029] uppercase tracking-wider">
+            <h5 className="font-serif font-bold text-sm text-[#faf8f4] uppercase tracking-wider">
               Subscribe to our Newsletter
             </h5>
-            <p className="text-sm text-[#faf8f4] font-medium leading-relaxed">
+            <p className="text-sm text-[#faf8f4]/70 font-medium leading-relaxed">
               Signup for exclusive batch releases, deep discounts, and seasonal
               mushroom cultivation tutorials.
             </p>
@@ -238,17 +238,41 @@ export default function Footer() {
                   placeholder="example@mushroomharvest.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-12 px-4 bg-[#faf8f4] border border-[#faf8f4]/40 text-[#2d4029] text-sm font-medium rounded-2xl placeholder-[#2d4029]/50 focus:outline-none focus:border-white focus:ring-1 focus:ring-white shadow-inner transition-all"
+                  className="w-full h-12 px-4 bg-[#faf8f4] border border-transparent text-[#2d4029] text-sm font-medium rounded-2xl placeholder-[#2d4029]/50 focus:outline-none focus:ring-2 focus:ring-[#4c6a46] shadow-inner transition-all"
                 />
               </div>
               <button
                 type="submit"
-                className="w-full h-12 bg-[#faf8f4] hover:bg-white text-[#4c6a46] font-semibold text-sm rounded-full flex items-center justify-center gap-2 shadow-md transition-all focus:outline-none group"
+                className="w-full h-12 bg-[#4c6a46] hover:bg-[#5a7a52] text-white font-semibold text-sm rounded-full flex items-center justify-center gap-2 shadow-md ring-1 ring-[#faf8f4]/10 transition-all focus:outline-none focus:ring-2 focus:ring-[#faf8f4]/40 group"
               >
                 <span>Subscribe</span>
                 <Send className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </button>
             </form>
+          </div>
+        </div>
+      </div>
+
+      {/* BOTTOM BAR: COPYRIGHT & LEGAL */}
+      <div className="border-t border-[#faf8f4]/10 bg-[#253621]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-[#faf8f4]/60 font-medium text-center sm:text-left">
+            © {new Date().getFullYear()} B&J Mushroom Products. All rights
+            reserved.
+          </p>
+          <div className="flex items-center gap-5 text-xs font-semibold">
+            <Link
+              to="/"
+              className="text-[#faf8f4]/60 hover:text-white transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              to="/"
+              className="text-[#faf8f4]/60 hover:text-white transition-colors"
+            >
+              Terms of Service
+            </Link>
           </div>
         </div>
       </div>
