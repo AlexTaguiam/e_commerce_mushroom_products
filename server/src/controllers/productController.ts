@@ -3,7 +3,8 @@ import prisma from "../config/db";
 import cloudinary from "../config/cloudinary";
 import { PRODUCT_STATUS } from "../constants/enums";
 import { sendResponse } from "../utils/reponseHandler";
-
+import { redisClient } from "../lib/redis";
+import { getCache, setCache } from "../utils/cache";
 
 // --- GET FEATURED PRODUCTS ---
 export async function getFeaturedProducts(
@@ -32,9 +33,25 @@ export async function getFeaturedProducts(
 }
 
 // --- GET ALL PRODUCTS ---
-export async function getProducts(req: Request, res: Response): Promise<void> {
+export async function getProducts(
+  req: Request,
+  res: Response,
+): Promise<Response | void> {
   try {
     const { category, status } = req.query;
+
+    const cacheKey = `products:${JSON.stringify(req.query)}`;
+
+    const cacheProducts = await getCache(cacheKey);
+
+    if (cacheProducts) {
+      return sendResponse(
+        res,
+        200,
+        "Products retrieved from cache",
+        cacheProducts,
+      );
+    }
 
     const products = await prisma.product.findMany({
       where: {
@@ -43,6 +60,8 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
       },
       orderBy: { createdAt: "desc" },
     });
+
+    await setCache(cacheKey, products);
 
     sendResponse(res, 200, "Products retrieved successfully", products);
   } catch (error) {

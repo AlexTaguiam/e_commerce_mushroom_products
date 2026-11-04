@@ -1,6 +1,9 @@
+import type { Server } from "node:http";
+
+import "dotenv/config";
+
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import helmet from "helmet";
 
 import productRoutes from "./routes/productRoutes";
@@ -15,8 +18,7 @@ import dashboardRoutes from "./routes/dashboardRoutes";
 import reportRoutes from "./routes/reportRoutes";
 import { globalLimiter } from "./middleware/rateLimiter";
 import { schedulePendingCheckoutCleanup } from "./jobs/pendingCheckoutCleanup";
-
-dotenv.config();
+import { connectRedis, disconnectRedis } from "./lib/redis";
 
 const app = express();
 
@@ -67,5 +69,54 @@ app.use("/api/reports", reportRoutes);
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 const PORT = process.env.PORT || 5000;
-schedulePendingCheckoutCleanup();
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+let server: Server | undefined;
+let isShuttingDown = false;
+
+const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
+  if (isShuttingDown) {
+    return;
+  }
+
+  isShuttingDown = true;
+  console.log(`Received ${signal}. Shutting down gracefully...`);
+
+  try {
+    const activeServer = server;
+    if (activeServer) {
+      await new Promise<void>((resolve, reject) => {
+        activeServer.close((error) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+      });
+    }
+
+    await disconnectRedis();
+    console.log("Shutdown complete.");
+    process.exit(0);
+  } catch (error) {
+    console.error("Graceful shutdown failed:", error);
+    process.exit(1);
+  }
+};
+
+process.once("SIGINT", () => void shutdown("SIGINT"));
+process.once("SIGTERM", () => void shutdown("SIGTERM"));
+
+async function startServer(): Promise<void> {
+  await connectRedis();
+
+  schedulePendingCheckoutCleanup();
+
+  server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+startServer().catch((error) => {
+  console.error("Unable to start server:", error);
+  process.exit(1);
+});
